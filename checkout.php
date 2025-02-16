@@ -82,8 +82,8 @@
                                     <form>
                                         <div class="form-row">
                                             <div class="form-group col-md-12">
-                                                <label for="inputName">Pupose for borrow </label>
-                                                <input type="text" class="form-control" id="inputName" placeholder="Pupose for borrow">
+                                                <label for="inputName">Purpose for borrow </label>
+                                                <input type="text" class="form-control" id="inputName" placeholder="Purpose for borrow">
                                             </div>
                                            
                                         </div>                                        
