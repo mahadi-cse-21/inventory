@@ -18,7 +18,10 @@
         NProgress.start();
     </script> -->
 
-
+    <?php
+ include 'dbconnect.php';
+ 
+?>
     <div id="toaster"></div>
 
 
@@ -59,7 +62,7 @@
                                     <table id="productsTable1" class="table table-hover table-product" style="width:100%">
                                         <thead> 
                                             <tr>
-                                                <th></th>
+                                                <th>SI No.</th>
                                                 <th>Product Name</th>
                                                 <th>ID</th>
                                                 <th>Qty</th>
@@ -70,20 +73,29 @@
                                         </thead>
                                         <tbody class="product-list">
 
-                                        <?php for($i=0; $i<10; $i++){ ?>
+                                        <?php
+                                         $sql = "SELECT * FROM items";
+                                         $result = mysqli_query($conn,$sql);
+                                         if(mysqli_num_rows($result)>0) {
+                                            $count =0;
+                                            while($row = mysqli_fetch_assoc($result)) {
+                                                $count++;
+                                            
+                                         
+                                          ?>
 
                                             <tr>
                                                 <td class="py-0">
-                                                    <img src="assets/images/products/products-xs-01.jpg"  alt="Product Image">
+                                                    <?php  echo $count?>
                                                 </td> 
 
-                                                <td>Ledger Nano X</td>
-                                                <td>24547</td>
-                                                <td>61</td>
-                                                <td>46</td>                                                                                            
+                                                <td><?php  echo $row["item_name"]?></td>
+                                                <td><?php  echo $row["item_id"]?></td>
+                                                <td><?php  echo $row["stock_quantity"]?></td>
+                                                <td><?php  echo $row["item_code"]?></td>                                                                                            
                                             </tr>
 
-                                        <?php } ?>
+                                        <?php } }?>
 
                                         </tbody>
                                     </table>
