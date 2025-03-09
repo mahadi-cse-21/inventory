@@ -25,12 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $sql = "INSERT INTO users (user_id,first_name, middle_name, last_name, email,  password) 
             VALUES ('$contact','$first_name', '$mid_name', '$last_name', '$email', '$hashedPassword')";
 
-    // Execute the query and check if successful
-    if (mysqli_query($conn, $sql)) {
-        echo "<h1>Registration Successful!</h1>";
-    } else {
-        echo "<h1>Registration Failed: " . mysqli_error($conn) . "</h1>";
-    }
+    
 
     // Close the database connection
     mysqli_close($conn);
