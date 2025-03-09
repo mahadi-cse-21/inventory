@@ -1,7 +1,5 @@
 <?php 
 include 'dbconnect.php';
-
-
 ?>
 
 <!DOCTYPE html>
@@ -12,27 +10,40 @@ include 'dbconnect.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <style>
+        /* Ensure full height for the container and center it */
+        .h-100 {
+            height: 100vh;
+        }
+        .d-flex {
+            display: flex;
+        }
+        .justify-content-center {
+            justify-content: center;
+        }
+        .align-items-center {
+            align-items: center;
+        }
+    </style>
 </head>
 
 <body>
     <section class="h-100 gradient-form">
         <div class="container py-5 h-100">
             <div class="row d-flex justify-content-center align-items-center h-100">
-                <div class="col-xl-12">
+                <div class="col-xl-6 col-md-8">
                     <div class="card rounded-3 text-black">
                         <div class="row">
-                            <div class="col-lg-6">
-                                <div class="card-body justify-content-center p-md-5 mx-md-4">
-
+                            <div class="col-lg-12">
+                                <div class="card-body p-md-5 mx-md-4">
                                     <div class="text-center">
                                         <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-login-form/lotus.webp"
                                             style="width: 185px;" alt="logo">
                                         <h4 class="mt-1 mb-5 pb-1">We are The Group 04</h4>
                                     </div>
 
-                                    <!-- Update form action to self-submit -->
-                                    <form action="helper.php" method="get"> <!-- Form will now submit to the current page -->
-
+                                    <!-- Form -->
+                                    <form action="helper.php" method="post">
                                         <div data-mdb-input-init class="form-outline mb-4">
                                             <label class="form-label" for="form2Example11">Username</label>
                                             <input type="email" name="email" id="form2Example11" class="form-control"
@@ -46,7 +57,7 @@ include 'dbconnect.php';
 
                                         <div class="d-flex justify-content-between pt-1 mb-5 pb-1">
                                             <a class="text-muted" href="#!">Forgot password?</a>
-                                            <button data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block fa-lg gradient-custom-2 mb-3" type="submit">Log in</button> <!-- Changed type to submit -->
+                                            <button data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block fa-lg gradient-custom-2 mb-3" type="submit">Log in</button>
                                         </div>
 
                                         <div class="d-flex align-items-center justify-content-center pb-4">
@@ -58,7 +69,6 @@ include 'dbconnect.php';
 
                                 </div>
                             </div>
-                            
                         </div>
                     </div>
                 </div>

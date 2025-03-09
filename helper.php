@@ -2,9 +2,9 @@
 
 include 'dbconnect.php';
 // Only proceed if the form is submitted and GET data is available
-if (isset($_GET['email']) && isset($_GET['password'])) {
-    $email = $_GET['email'];
-    $password =  $_GET['password'];
+if (isset($_POST['email']) && isset($_POST['password'])) {
+    $email = $_POST['email'];
+    $password =  $_POST['password'];
 
     // Now you can safely use the values for your SQL query
     $sql = "SELECT email, user_id, password FROM users WHERE email = '$email'";
