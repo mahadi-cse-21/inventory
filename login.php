@@ -1,29 +1,7 @@
 <?php 
 include 'dbconnect.php';
 
-// Only proceed if the form is submitted and GET data is available
-if (isset($_GET['email']) && isset($_GET['password'])) {
-    $email = $_GET['email'];
-    $password = $_GET['password'];
 
-    // Now you can safely use the values for your SQL query
-    $sql = "SELECT user_id FROM users WHERE email = '$email' AND password = '$password'";
-
-    // Execute the query and handle the result
-    $result = mysqli_query($conn, $sql);
-
-    if (mysqli_num_rows($result) > 0) {
-        // Login successful
-        echo "Login Successful!";
-        // You can also redirect the user or start a session here
-    } else {
-        // Invalid login
-        echo "Invalid email or password!";
-    }
-
-    // Close the database connection
-    mysqli_close($conn);
-}
 ?>
 
 <!DOCTYPE html>
@@ -53,7 +31,7 @@ if (isset($_GET['email']) && isset($_GET['password'])) {
                                     </div>
 
                                     <!-- Update form action to self-submit -->
-                                    <form action="index.php" method="get"> <!-- Form will now submit to the current page -->
+                                    <form action="helper.php" method="get"> <!-- Form will now submit to the current page -->
 
                                         <div data-mdb-input-init class="form-outline mb-4">
                                             <label class="form-label" for="form2Example11">Username</label>
