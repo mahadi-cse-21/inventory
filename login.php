@@ -10,63 +10,59 @@
 </head>
 
 <body>
-    <div class="container">
-    <section class="vh-100" style="background-color: #fffe;">
-        <form>
-            <!-- Email input -->
-            <div data-mdb-input-init class="form-outline mb-4">
-                <input type="email" id="form2Example1" class="form-control" />
-                <label class="form-label" for="form2Example1">Email address</label>
-            </div>
+    <section class="h-100 gradient-form" >
+        <div class="container py-5 h-100">
+            <div class="row d-flex justify-content-center align-items-center h-100">
+                <div class="col-xl-12">
+                    <div class="card rounded-3 text-black">
+                        <div class="row ">
+                            <div class="col-lg-6">
+                                <div class="card-body justify-content-center p-md-5 mx-md-4">
 
-            <!-- Password input -->
-            <div data-mdb-input-init class="form-outline mb-4">
-                <input type="password" id="form2Example2" class="form-control" />
-                <label class="form-label" for="form2Example2">Password</label>
-            </div>
+                                    <div class="text-center">
+                                        <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-login-form/lotus.webp"
+                                            style="width: 185px;" alt="logo">
+                                        <h4 class="mt-1 mb-5 pb-1">We are The Group 04</h4>
+                                    </div>
 
-            <!-- 2 column grid layout for inline styling -->
-            <div class="row mb-4">
-                <div class="col d-flex justify-content-center">
-                    <!-- Checkbox -->
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="form2Example31" checked />
-                        <label class="form-check-label" for="form2Example31"> Remember me </label>
+                                    <form>
+
+
+                                        <div data-mdb-input-init class="form-outline mb-4">
+                                            <label class="form-label" for="form2Example11">Username</label>
+                                            <input type="email" id="form2Example11" class="form-control"
+                                                placeholder="Email address" />
+
+                                        </div>
+
+                                        <div data-mdb-input-init class="form-outline mb-4">
+                                            <label class="form-label" for="form2Example22">Password</label>
+                                            <input type="password" id="form2Example22" class="form-control" placeholder="Password" />
+
+                                        </div>
+
+                                        <div class="d-flex justify-content-between pt-1 mb-5 pb-1">
+                                            <a class="text-muted" href="#!">Forgot password?</a>
+                                            <button data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block fa-lg gradient-custom-2 mb-3" type="button">Log in</button>
+                                        </div>
+
+                                        <div class="d-flex align-items-center justify-content-center pb-4">
+                                            <p class="mb-0 me-2">Don't have an account?</p>
+                                            <a href="signin.php" class="btn btn-success" data-mdb-button-init data-mdb-ripple-init>Create new</a>
+                                            
+                                        </div>
+
+                                    </form>
+
+                                </div>
+                            </div>
+                            
+                        </div>
                     </div>
                 </div>
-
-                <div class="col">
-                    <!-- Simple link -->
-                    <a href="#!">Forgot password?</a>
-                </div>
             </div>
-
-            <!-- Submit button -->
-            <button type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-primary btn-block mb-4">Sign in</button>
-
-            <!-- Register buttons -->
-            <div class="text-center">
-                <p>Not a member? <a href="#!">Register</a></p>
-                <p>or sign up with:</p>
-                <button type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
-                    <i class="fab fa-facebook-f"></i>
-                </button>
-
-                <button type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
-                    <i class="fab fa-google"></i>
-                </button>
-
-                <button type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
-                    <i class="fab fa-twitter"></i>
-                </button>
-
-                <button type="button" data-mdb-button-init data-mdb-ripple-init class="btn btn-link btn-floating mx-1">
-                    <i class="fab fa-github"></i>
-                </button>
-            </div>
-        </form>
-        </section>
-    </div>
+        </div>
+    </section>
 </body>
 
 </html>

@@ -310,7 +310,7 @@
                                     </li>
 
                                     <li class="dropdown-footer">
-                                        <a class="dropdown-link-item" href="sign-in.html"> <i
+                                        <a class="dropdown-link-item" href="../database-project/login.php"> <i
                                                 class="mdi mdi-logout"></i> Log Out </a>
                                     </li>
                                 </ul>
