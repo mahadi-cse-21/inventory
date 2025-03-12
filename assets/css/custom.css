@@ -1,0 +1,117 @@
+
+    /* Product Card Styling */
+    .product-card {
+        max-width: 350px;
+        width: 100%;
+        background-color: #ffffff;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+  
+      .product-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+      }
+  
+      /* Product Image */
+      .product-image img {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 16 / 9;
+        object-fit: cover;
+        border-top-left-radius: 16px;
+        border-top-right-radius: 16px;
+      }
+  
+      /* Product Details */
+      .product-details {
+        padding: 20px;
+        text-align: center;
+      }
+  
+      .product-name {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 10px;
+      }
+  
+      .product-price {
+        font-size: 1.1rem;
+        color: #e74c3c;
+        margin-bottom: 20px;
+      }
+  
+      /* Add to Cart Button */
+      .add-to-cart-btn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        padding: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #fff;
+        background-color: #e74c3c;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.3s ease;
+      }
+  
+      .add-to-cart-btn:hover {
+        background-color: #c0392b;
+        transform: scale(1.05);
+      }
+  
+      .add-to-cart-btn:active {
+        transform: scale(0.95);
+      }
+  
+      .btn-icon {
+        font-size: 1.2rem;
+        font-weight: bold;
+      }
+  
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .product-card {
+          max-width: 100%;
+          margin: 0 auto;
+        }
+  
+        .product-name {
+          font-size: 1.1rem;
+        }
+  
+        .product-price {
+          font-size: 1rem;
+        }
+  
+        .add-to-cart-btn {
+          font-size: 0.9rem;
+          padding: 10px;
+        }
+      }
+  
+      @media (max-width: 480px) {
+        .product-card {
+          border-radius: 12px;
+        }
+  
+        .product-name {
+          font-size: 1rem;
+        }
+  
+        .product-price {
+          font-size: 0.9rem;
+        }
+  
+        .add-to-cart-btn {
+          font-size: 0.8rem;
+          padding: 8px;
+        }
+      }
