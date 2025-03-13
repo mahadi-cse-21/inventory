@@ -46,7 +46,6 @@ CREATE TABLE items (
 CREATE TABLE carts (
     cart_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
-    status ENUM('cart', 'completed','need approval', 'reject','approved') DEFAULT 'cart',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
@@ -131,7 +130,7 @@ CREATE TABLE audit_logs (
 );
 
 -- Insert initial data into roles table
-INSERT INTO roles (role_name) VALUES ('General'), ('Faculty'), ('Department Representative'), ('Admin'), ('Staff');
+INSERT INTO roles (role_name) VALUES ('Student'), ('Faculty'), ('Department Representative'), ('Admin'), ('Staff');
 
 -- Insert initial data into borrow_status table
 INSERT INTO borrow_status (status_name) VALUES ('Pending'), ('Approved'), ('Rejected');
