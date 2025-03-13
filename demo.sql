@@ -29,8 +29,10 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `admin` (
   `user_id` varchar(12) NOT NULL,
-  `persmission` tinyint(1) DEFAULT NULL,
-  `desination` text DEFAULT NULL
+  `persmission` tinyint(1) DEFAULT NULL, 
+  `designation` text DEFAULT NULL
+  PRIMARY KEY (`user_id`)
+  FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -54,10 +56,14 @@ CREATE TABLE `borrow_request` (
 -- Table structure for table `category`
 --
 
-CREATE TABLE `category` (
-  `cat_id` int(11) NOT NULL,
+CREATE TABLE `categories` (
+  `cat_id` int(11) NOT NULL AUTOINCREMENT,
   `cat_name` text NOT NULL,
-  `descirption` text NOT NULL
+  `descirption` text NOT NULL,
+  `cat_parent` int(11) DEFAULT NULL
+  
+  PRIMARY KEY (`cat_id`) 
+  FOREIGN KEY (`cat_parent`) REFERENCES `categories` (`cat_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -66,6 +72,51 @@ CREATE TABLE `category` (
 -- Table structure for table `damage`
 --
 
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `general`
+--
+
+CREATE TABLE `generals` (
+  `user_id` varchar(12) NOT NULL,
+  `gender` text NOT NULL,
+  `date_of_birth` date NOT NULL
+  PRIMARY KEY (`user_id`)
+   FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+-- ---CREATE TABLE `location` (
+--   `location_id` int(11) NOT NULL,
+--   `building_name` text NOT NULL,
+--   `room_no` int(11) NOT NULL
+-- --) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Table structure for table `items`
+--
+
+CREATE TABLE `items` (
+  `item_id` int(11) NOT NULL AUTOINCREMENT,
+  
+  `item_name` text NOT NULL,
+  `stock_quantity` int(11) NOT NULL,
+  `status` enum("acitve","inactive") DEFAULT "active",
+  `item_image` varchar(500) DEFAULT "default.jpg",
+  `item_description` text NOT NULL,
+  `cat_id` int(11) NOT NULL,
+ `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  PRIMARY KEY (`item_id`)
+  FOREIGN KEY (`cat_id`) REFERENCES `categories` (`cat_id`)
+ 
+  
+  
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
 CREATE TABLE `damage` (
   `damage_id` int(11) NOT NULL,
   `item_id` int(11) NOT NULL,
@@ -74,61 +125,10 @@ CREATE TABLE `damage` (
   `details` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
-
---
--- Table structure for table `general`
---
-
-CREATE TABLE `general` (
-  `user_id` varchar(12) NOT NULL,
-  `dept` text NOT NULL,
-  `DOB` date NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `items`
---
-
-CREATE TABLE `items` (
-  `item_id` int(11) NOT NULL,
-  `item_name` text NOT NULL,
-  `stock_quantity` int(11) NOT NULL,
-  `available_status` text NOT NULL,
-  `item_code` text NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `items`
---
-
-INSERT INTO `items` (`item_id`, `item_name`, `stock_quantity`, `available_status`, `item_code`) VALUES
-(201, 'Laptop', 25, 'available', '2020201'),
-(202, 'Desktop', 25, 'available', '2020201'),
-(203, 'Chair', 25, 'available', '2020201'),
-(204, 'Mobile', 25, 'available', '2020201'),
-(205, 'CellPhone', 25, 'available', '2020201'),
-(206, 'Table', 25, 'available', '2020201'),
-(207, 'Light', 25, 'available', '2020201'),
-(208, 'Fan', 25, 'available', '2020201'),
-(209, 'T-Shirt', 25, 'available', '2020201'),
-(210, 'Almirah', 25, 'available', '2020201'),
-(211, 'Pen', 25, 'available', '2020201');
-
--- --------------------------------------------------------
-
 --
 -- Table structure for table `location`
 --
 
-CREATE TABLE `location` (
-  `location_id` int(11) NOT NULL,
-  `item_id` int(11) NOT NULL,
-  `building_name` text NOT NULL,
-  `room_no` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -180,11 +180,12 @@ CREATE TABLE `transactions` (
 
 CREATE TABLE `users` (
   `user_id` varchar(12) NOT NULL,
-  `first_name` text NOT NULL,
-  `middle_name` text DEFAULT NULL,
-  `last_name` text DEFAULT NULL,
-  `email` varchar(25) DEFAULT NULL,
-  `password` varchar(16) DEFAULT NULL
+  `first_name` varchar(50) NOT NULL,
+  
+  `last_name` varchar(50) DEFAULT NULL,
+  `dept` varchar(50) DEFAULT NULL,
+  `email` varchar(50) DEFAULT NULL,
+  `password` varchar(500) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
