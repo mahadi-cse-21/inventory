@@ -1,315 +1,179 @@
-<?php 
-session_start();
-?>
+<?php
+/**
+ * InventoryPro - Main Entry Point
+ * 
+ * This file handles all requests and routes them to the appropriate views
+ */
 
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
+// Initialize the application
+require_once 'init.php';
 
-<head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+// Check if user is logged in, redirect to login if not (except for login and register pages)
+$allowedPaths = ['auth/login', 'auth/register', 'auth/forgot-password', 'auth/reset-password'];
+$requestPath = isset($_GET['path']) ? $_GET['path'] : '';
+$pathSegments = explode('/', trim($requestPath, '/'));
 
-    <title>Mono - Responsive Admin & Dashboard Template</title>
-    <!-- <link rel="stylesheet" href="assets/css/custom.css"> -->
-    <style>
-        /* General Reset */
+if (!AuthHelper::isAuthenticated() && (!isset($pathSegments[0]) || !in_array($pathSegments[0] . '/' . ($pathSegments[1] ?? ''), $allowedPaths))) {
+    if ($requestPath !== 'auth/login') { // Prevent redirect loop
+        redirect(BASE_URL . '/auth/login');
+        exit;
+    }
+}
 
+// Define routes and their corresponding view files
+$routes = [
+    // Dashboard
+    'dashboard/index' => 'views/dashboard.php',
+    
+    // Authentication
+    'auth/login' => 'views/auth/login.php',
+    'auth/logout' => 'views/auth/logout.php',
+    'auth/register' => 'views/auth/register.php',
+    'auth/forgot-password' => 'views/auth/forgot_password.php',
+    'auth/reset-password' => 'views/auth/reset_password.php',
+    
+    // User Profile
+    'users/profile' => 'views/users/profile.php',
+    'users/update-profile' => 'views/users/update_profile.php',
+    'users/change-password' => 'views/users/change_password.php',
+    
+    // User Management (Admin)
+    'users/index' => 'views/users/index.php',
+    'users/create' => 'views/users/create.php',
+    'users/edit' => 'views/users/edit.php',
+    'users/view' => 'views/users/view.php',
+    'users/delete' => 'views/users/delete.php',
+    'users/permissions' => 'views/users/permissions.php',
 
-        /* Search Bar */
-        .search-container {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 30px;
-        }
+    // Item Management
+    'items/index' => 'views/items/index.php',
+    'items/create' => 'views/items/create.php',
+    'items/edit' => 'views/items/edit.php',
+    'items/view' => 'views/items/view.php',
+    'items/delete' => 'views/items/delete.php',
+    'items/browse' => 'views/items/browse.php',
+    'items/search' => 'views/items/search.php',
 
-        .search-bar {
-            width: 100%;
-            max-width: 400px;
-            padding: 12px;
-            font-size: 1rem;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            outline: none;
-            transition: border-color 0.3s ease;
-        }
-
-        .search-bar:focus {
-            border-color: #3498db;
-        }
-
-        /* Product Grid */
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-
-        /* Product Card Styling */
-        .product-card {
-            max-width: 320px;
-            background-color: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Product Image */
-        .product-image img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
-        }
-
-        /* Product Details */
-        .product-details {
-            padding: 16px;
-            text-align: center;
-        }
-
-        .product-name {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 8px;
-        }
-
-        .product-qty {
-            font-size: 1rem;
-            color: #555;
-            margin-bottom: 16px;
-        }
-
-        /* Add to Cart Button */
-        .add-to-cart-btn {
-            display: inline-block;
-            padding: 10px 20px;
-            font-size: 1rem;
-            font-weight: 600;
-            color: #fff;
-            background-color: #e67e22;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.3s ease;
-            margin-top: auto;
-        }
-
-        .add-to-cart-btn:hover {
-            background-color: #d35400;
-            transform: scale(1.05);
-        }
-
-        .add-to-cart-btn:active {
-            transform: scale(0.95);
-        }
-
-        /* Hidden Cards */
-        .hidden {
-            display: none;
-        }
-    </style>
-
-    <?php include('assets/partials/headerfile.php') ?>
-</head>
-
-
-<body class="navbar-fixed sidebar-fixed" id="body">
-    <!-- <script>
-        NProgress.configure({ showSpinner: false });
-        NProgress.start();
-    </script> -->
-
-
-    <div id="toaster"></div>
-
-
-    <!-- ====================================
-    ——— WRAPPER
-    ===================================== -->
-    <div class="wrapper">
-
-
-        <!-- ====================================
-          ——— LEFT SIDEBAR WITH OUT FOOTER
-        ===================================== -->
-        <?php include('assets/partials/sidebar.php') ?>
-
-
-        <!-- ====================================
-      ——— PAGE WRAPPER
-      ===================================== -->
-        <div class="page-wrapper">
-
-            <!-- Header -->
-            <?php include('assets/partials/navbar.php') ?>
-
-            <!-- ====================================
-        ——— CONTENT WRAPPER
-        ===================================== -->
-            <div class="content-wrapper">
-                <div class="content">
-
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="card card-default">
-                                <div class="card-header">
-                                    <h2>Products Inventory</h2>
-
-                                </div>
-                                <div class="card-body">
-                                    <!-- Search Bar -->
-                                    <div class="search-container">
-                                        <input type="text" id="search-bar" class="search-bar"
-                                            placeholder="Search products...">
-                                    </div>
-
-                                    <!-- Product Grid -->
-                                    <?php
-                                    include('db_connection.php');
-                                    $query = "SELECT * FROM products WHERE status = 'active'";
-                                    $result = $conn->query($query);
-                                    ?>
-
-<!-- <div class="row row-cols-2 row-cols-lg-5 g-2 g-lg-3">
-    <div class="col">
-      <div class="p-3 border bg-light">Row column</div>
-    </div>   
-  </div> -->
-                                    <div class="product-grid" id="product-grid">
-                                        <?php while ($row = $result->fetch_assoc()) { ?>
-                                            <div class="product-card" data-id="<?php echo $row['product_id']; ?>" data-name="<?php echo $row['product_name']; ?>">
-                                                <div class="product-image">
-                                                    <img src="assets/images/products/p2.jpg" alt="<?php echo $row['product_name']; ?>">
-                                                </div>
-                                                <div class="product-details">
-                                                    <h3 class="product-name"><?php echo $row['product_name']; ?></h3>
-                                                    <p class="product-qty">Stock: <?php echo $row['stock']; ?></p>
-                                                    <button class="addToCartBtn add-to-cart-btn">Add to Cart</button>
-                                                </div>
-                                            </div>
-                                        <?php } ?>
-                                    </div>
-
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-<!-- <div class="container">
-  <div class="row row-cols-2 row-cols-lg-5 g-2 g-lg-3">
-    <div class="col">
-      <div class="p-3 border bg-light">Row column</div>
-    </div>   
-  </div>
-</div> -->
-
-                </div>
-
-            </div>
-
-            <!-- Footer -->
-            <?php include('assets/partials/footer.php') ?>
-
-        </div>
-    </div>
 
     
+    // Borrow Management
+    'borrow/index' => 'views/borrow/index.php',
+    'borrow/create' => 'views/borrow/create.php',
+    'borrow/my-items' => 'views/borrow/my_items.php',
+    'borrow/history' => 'views/borrow/history.php',
+    'borrow/return' => 'views/borrow/return.php',
+    'borrow/requests' => 'views/borrow/requests.php',
+    // 'borrow/view-request' => 'views/borrow/view_request.php',
+    'borrow/process-request' => 'views/borrow/process_request.php',
+    'borrow/view' => 'views/borrow/view.php', // Add this line to support /borrow/view?id=X
+    'borrow/view-request' => 'views/borrow/view.php', // Keep this for backward compatibility
+    
+    // Location Management
+    'locations/index' => 'views/locations/index.php',
+    'locations/create' => 'views/locations/create.php',
+    'locations/edit' => 'views/locations/edit.php',
+    'locations/view' => 'views/locations/view.php',
+    'locations/delete' => 'views/locations/delete.php',
+    'locations/transfer' => 'views/locations/transfer.php',
+    
+    // Maintenance Management
+    // 'maintenance/index' => 'views/maintenance/index.php',
+    // 'maintenance/create' => 'views/maintenance/create.php',
+    // 'maintenance/edit' => 'views/maintenance/edit.php',
+    // 'maintenance/view' => 'views/maintenance/view.php',
+    // 'maintenance/complete' => 'views/maintenance/complete.php',
+    // 'maintenance/damage-reports/create' => 'views/maintenance/damage_reports_create.php',
+    // 'maintenance/damage-reports' => 'views/maintenance/damage_reports.php',
+    
+    // Settings
+    'settings/index' => 'views/settings/index.php',
+    'settings/system' => 'views/settings/system.php',
+    'settings/categories' => 'views/settings/categories.php',
+    'settings/suppliers' => 'views/settings/suppliers.php',
+    
+    // API Endpoints
+    'api/items' => 'api/items.php',
+    'api/users' => 'api/users.php',
+    'api/locations' => 'api/locations.php',
+    'api/borrow' => 'api/borrow.php',
+    
+    // Error pages
+    '404' => 'views/errors/404.php',
+    '403' => 'views/errors/403.php',
+    '500' => 'views/errors/500.php',
+];
 
 
+// Add these routes to the $routes array in index.php
 
+// Maintenance Management
+$routes['maintenance/index'] = 'views/maintenance/index.php';
+$routes['maintenance/create'] = 'views/maintenance/create.php';
+$routes['maintenance/edit'] = 'views/maintenance/edit.php';
+$routes['maintenance/view'] = 'views/maintenance/view.php';
+$routes['maintenance/assign'] = 'views/maintenance/assign.php';
+$routes['maintenance/start'] = 'views/maintenance/start.php';
+$routes['maintenance/complete'] = 'views/maintenance/complete.php';
+$routes['maintenance/verify'] = 'views/maintenance/verify.php';
+$routes['maintenance/cancel'] = 'views/maintenance/cancel.php';
 
+// Damage Reports
+$routes['maintenance/damage-reports'] = 'views/maintenance/damage_reports.php';
+$routes['maintenance/damage-reports/create'] = 'views/maintenance/damage_report_create.php';
+$routes['maintenance/damage-reports/view'] = 'views/maintenance/damage_report_view.php';
+$routes['maintenance/damage-reports/edit'] = 'views/maintenance/damage_report_edit.php';
+$routes['maintenance/damage-reports/resolve'] = 'views/maintenance/damage_report_resolve.php';
 
+// API Endpoints for Maintenance
+$routes['api/maintenance'] = 'api/maintenance.php';
 
+// Routing Logic
+$path = isset($_GET['path']) ? $_GET['path'] : '';
+$segments = explode('/', trim($path, '/'));
 
-    <!--  -->
+// Default controller and action
+$controller = !empty($segments[0]) ? $segments[0] : 'dashboard';
+$action = isset($segments[1]) ? $segments[1] : 'index';
+$param = isset($segments[2]) ? $segments[2] : null;
 
-    <?php include('assets/partials/footerfile.php') ?>
+// Fallback for invalid routes
+if (!isset($routes["$controller/$action"])) {
+    include 'views/errors/404.php';
+    exit;
+}
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        // Search Functionality
-        const searchBar = document.getElementById('search-bar');
-        const productGrid = document.getElementById('product-grid');
-        const productCards = Array.from(productGrid.getElementsByClassName('product-card'));
+// Construct the route key
+$routeKey = $controller . '/' . $action;
 
-        searchBar.addEventListener('input', (event) => {
-            const query = event.target.value.toLowerCase();
-
-            productCards.forEach((card) => {
-                const productName = card.getAttribute('data-name').toLowerCase();
-                if (productName.includes(query)) {
-                    card.classList.remove('hidden');
-                } else {
-                    card.classList.add('hidden');
-                }
-            });
-        });
-
-        // $(document).ready(function() {
-        //     $('.addToCartBtn').on('click', function() {
-        //         var productId = $(this).closest('.product-card').data('id');
-        //        // alert(productId);
-        //         $.ajax({
-        //             url: 'update_cart.php',
-        //             type: 'POST',
-        //             data: { product_id: productId },
-        //             success: function(response) {
-        //                 $('#totalCartItem').text(response.totalCartItem);
-                        
-        //                     // let x = document.getElementById('totalCartItem');
-        //                     // let totalCartItem = 0;
-        //                     // x.innerText = totalCartItem;
-        //                     // console.log(x.innerText); // This will log the text content of the element
-
-        //             }
-        //         });
-        //     });
-        // });
-    </script>
-
-<!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
-<script>
-$(document).ready(function() {
-    $('.addToCartBtn').on('click', function() {
-        var productId = $(this).closest('.product-card').data('id');
-        
-        $.ajax({
-            url: 'update_cart.php',
-            type: 'POST',
-            data: { product_id: productId },
-            success: function(response) {
-                console.log("Response from server: ", response);  // Log the raw response
-                try {
-                    var data = JSON.parse(response);
-                    $('#totalCartItem').text(data.totalCartItem);
-                } catch (e) {
-                    console.error("Error parsing JSON: ", e);
-                }
-            },
-            error: function(xhr, status, error) {
-                console.error("AJAX Error: " + error);
+// Check if route exists
+if (isset($routes[$routeKey])) {
+    $viewFile = $routes[$routeKey];
+    
+    // Check if file exists
+    if (file_exists($viewFile)) {
+        // Check permissions for admin-only routes
+        if (strpos($routeKey, 'users/') === 0 && $action !== 'profile' && $action !== 'update-profile' && $action !== 'change-password') {
+            if (!hasRole('admin')) {
+                include 'views/errors/403.php';
+                exit;
             }
-        });
-    });
-});
-
-</script>
-
-
-
-
-</body>
-
-</html>
+        }
+        
+        // Check permissions for manager-only routes
+        if (strpos($routeKey, 'settings/') === 0 || $routeKey === 'borrow/requests') {
+            if (!hasRole(['admin', 'manager'])) {
+                include 'views/errors/403.php';
+                exit;
+            }
+        }
+        
+        // Include the appropriate view file
+        include $viewFile;
+    } else {
+        // View file not found
+        include 'views/errors/404.php';
+    }
+} else {
+    // Route not found
+    include 'views/errors/404.php';
+}
