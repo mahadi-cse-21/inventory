@@ -1017,6 +1017,11 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.style.overflow = 'hidden'; // Prevent scrolling
         });
     });
+
+    // Submit the form when the confirm button is clicked
+    confirmBtn.addEventListener('click', function() {
+        processForm.submit();
+    });
     
     // Close modal
     modalClose.addEventListener('click', closeModal);
@@ -1086,5 +1091,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 
 <?php include 'includes/footer.php'; ?>

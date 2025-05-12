@@ -20,15 +20,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     validateCsrfToken();
     
     // Get form data
-    $username = cleanInput($_POST['username']);
+    $email = cleanInput($_POST['email']);
     $password = $_POST['password']; // Don't clean passwords
     $rememberMe = isset($_POST['remember_me']);
     
     // Validate form data
     $errors = [];
     
-    if (empty($username)) {
-        $errors[] = 'Username is required';
+    if (empty($email)) {
+        $errors[] = 'email is required';
     }
     
     if (empty($password)) {
@@ -37,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // If no errors, attempt login
     if (empty($errors)) {
-        $result = AuthHelper::login($username, $password);
+        $result = AuthHelper::login($email, $password);
         
         if ($result['success']) {
             // Set remember me cookie if checked
@@ -297,9 +297,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="hidden" name="<?php echo CSRF_TOKEN_NAME; ?>" value="<?php echo $_SESSION[CSRF_TOKEN_NAME]; ?>">
                     
                     <div class="form-group">
-                        <label class="form-label" for="username">Username</label>
-                        <input type="text" id="username" name="username" class="form-control" 
-                               value="<?php echo isset($username) ? htmlspecialchars($username) : ''; ?>" required autofocus>
+                        <label class="form-label" for="email">Email</label>
+                        <input type="text" id="email" name="email" class="form-control" 
+                               value="<?php echo isset($email) ? htmlspecialchars($email) : ''; ?>" required autofocus>
                     </div>
                     
                     <div class="form-group">

@@ -24,9 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Get form data
     $userData = [
-        'username' => cleanInput($_POST['username']),
-        'password' => $_POST['password'], // Don't clean passwords
         'email' => cleanInput($_POST['email']),
+        'password' => $_POST['password'], // Don't clean passwords
         'full_name' => cleanInput($_POST['full_name']),
         'phone' => cleanInput($_POST['phone'] ?? ''),
         'department_id' => isset($_POST['department_id']) ? (int)$_POST['department_id'] : null,
@@ -38,11 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Validate form data
     $errors = [];
     
-    if (empty($userData['username'])) {
-        $errors[] = 'Username is required';
-    } elseif (strlen($userData['username']) < 4) {
-        $errors[] = 'Username must be at least 4 characters';
-    }
+
     
     if (empty($userData['password'])) {
         $errors[] = 'Password is required';
@@ -235,13 +230,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <input type="hidden" name="<?php echo CSRF_TOKEN_NAME; ?>" value="<?php echo $_SESSION[CSRF_TOKEN_NAME]; ?>">
                                 
                                 <div class="form-row">
-                                    <div class="form-col">
+                                    <!-- <div class="form-col">
                                         <div class="form-group">
-                                            <label class="form-label" for="username">Username</label>
-                                            <input type="text" id="username" name="username" class="form-control" 
-                                                value="<?php echo isset($userData['username']) ? htmlspecialchars($userData['username']) : ''; ?>" required>
+                                            <label class="form-label" for="email">email</label>
+                                            <input type="hidden" id="email" value="user" name="username" class="form-control" 
+                                                value="<?php echo isset($userData['email']) ? htmlspecialchars($userData['email']) : ''; ?>" required>
                                         </div>
-                                    </div>
+                                    </div> -->
                                     
                                     <div class="form-col">
                                         <div class="form-group">

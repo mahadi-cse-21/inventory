@@ -3,24 +3,24 @@ class AuthHelper {
     /**
      * Authenticate user with provided credentials
      */
-    public static function login($username, $password) {
+    public static function login($email, $password) {
         $conn = getDbConnection();
         
         // Get user by username
         $sql = "SELECT id, username, password, email, full_name, role, department_id, is_active, 
                        account_locked, failed_login_attempts 
                 FROM users 
-                WHERE username = ?";
+                WHERE email = ?";
         
         $stmt = $conn->prepare($sql);
-        $stmt->execute([$username]);
+        $stmt->execute([$email]);
         $user = $stmt->fetch();
         
         // Check if user exists
         if (!$user) {
             return [
                 'success' => false,
-                'message' => 'Invalid username or password.'
+                'message' => 'Invalid email or password.'
             ];
         }
         
@@ -47,7 +47,7 @@ class AuthHelper {
             
             return [
                 'success' => false,
-                'message' => 'Invalid username or password.'
+                'message' => 'Invalid email or password.'
             ];
         }
         
@@ -120,13 +120,8 @@ class AuthHelper {
     public static function register($userData) {
         $conn = getDbConnection();
         
-        // Check if username already exists
-        if (UtilityHelper::valueExists('users', 'username', $userData['username'])) {
-            return [
-                'success' => false,
-                'message' => 'Username already exists. Please choose a different username.'
-            ];
-        }
+        // Remove unnecessary username check or set a default value
+        $userData['username'] = $userData['username'] ?? $userData['email']; // Use email as username if not provided
         
         // Check if email already exists
         if (UtilityHelper::valueExists('users', 'email', $userData['email'])) {
@@ -146,7 +141,7 @@ class AuthHelper {
         
         $stmt = $conn->prepare($sql);
         $result = $stmt->execute([
-            $userData['username'],
+            $userData['username'], // Ensure username is passed
             $hashedPassword,
             $userData['email'],
             $userData['full_name'],
