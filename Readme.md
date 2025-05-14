@@ -180,3 +180,5 @@ Provides general utility functions used across the application.
 1. **Include the Helper**: Ensure the helper is included in the `init.php` file or the relevant script.
 2. **Call Methods**: Use static methods directly, e.g., `AuthHelper::login($username, $password)`.
 3. **Handle Exceptions**: Wrap calls in try-catch blocks where necessary to handle errors gracefully.
+
+#check
