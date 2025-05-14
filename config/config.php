@@ -3,7 +3,8 @@
 define('APP_NAME', 'Inventory Pro');
 define('APP_VERSION', '1.0.0');
 define('SITE_URL', 'http://localhost/inventory'); // Change according to your setup
-define('BASE_URL', '/inventory'); // Change according to your setup
+define('BASE_URL', '/inventory');
+ // Change according to your setup
 define('ASSETS_URL', BASE_URL . '/assets');
 
 // Session configuration
