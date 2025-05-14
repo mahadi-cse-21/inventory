@@ -88,7 +88,7 @@ include 'includes/header.php';
 <div class="content-header">
     <div style="display: flex; justify-content: space-between; align-items: center;">
         <div>
-            <h1 class="page-title">Request: <?php echo htmlspecialchars($request['request_id']); ?></h1>
+            <h1 class="page-title">Request: <?php echo htmlspecialchars($request['id']); ?></h1>
             <nav class="breadcrumbs">
                 <a href="<?php echo BASE_URL; ?>" class="breadcrumb-item">Home</a>
                 <a href="<?php echo BASE_URL; ?>/borrow/requests" class="breadcrumb-item">Borrow Requests</a>
@@ -209,27 +209,16 @@ include 'includes/header.php';
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem;">
             <div>
                 <div style="font-weight: 600; font-size: 0.8rem; color: var(--gray-500); margin-bottom: 0.25rem;">Requester</div>
-                <div style="font-weight: 500;"><?php echo htmlspecialchars($request['requester_name']); ?></div>
+                <div style="font-weight: 500;"><?php echo htmlspecialchars($request['name']); ?></div>
                 <div style="font-size: 0.85rem; color: var(--gray-600);"><?php echo htmlspecialchars($request['requester_email']); ?></div>
             </div>
-            <div>
-                <div style="font-weight: 600; font-size: 0.8rem; color: var(--gray-500); margin-bottom: 0.25rem;">Department</div>
-                <div style="font-weight: 500;"><?php echo htmlspecialchars($request['department_name'] ?? 'Not Specified'); ?></div>
-            </div>
+            
             <div>
                 <div style="font-weight: 600; font-size: 0.8rem; color: var(--gray-500); margin-bottom: 0.25rem;">Request Date</div>
-                <div style="font-weight: 500;"><?php echo UtilityHelper::formatDateForDisplay($request['created_at'], 'datetime'); ?></div>
+                <div style="font-weight: 500;"><?php echo $request['request_date'] ;?></div>
             </div>
-            <div>
-                <div style="font-weight: 600; font-size: 0.8rem; color: var(--gray-500); margin-bottom: 0.25rem;">Purpose</div>
-                <div style="font-weight: 500;"><?php echo htmlspecialchars($request['purpose']); ?></div>
-            </div>
-            <?php if (!empty($request['project_name'])): ?>
-            <div>
-                <div style="font-weight: 600; font-size: 0.8rem; color: var(--gray-500); margin-bottom: 0.25rem;">Project/Event</div>
-                <div style="font-weight: 500;"><?php echo htmlspecialchars($request['project_name']); ?></div>
-            </div>
-            <?php endif; ?>
+           
+            
             <div>
                 <div style="font-weight: 600; font-size: 0.8rem; color: var(--gray-500); margin-bottom: 0.25rem;">Borrow Date</div>
                 <div style="font-weight: 500;"><?php echo UtilityHelper::formatDateForDisplay($request['borrow_date']); ?></div>
@@ -240,25 +229,12 @@ include 'includes/header.php';
             </div>
             <div>
                 <div style="font-weight: 600; font-size: 0.8rem; color: var(--gray-500); margin-bottom: 0.25rem;">Duration</div>
-                <div style="font-weight: 500;"><?php echo UtilityHelper::dateDiffInDays($request['borrow_date'], $request['return_date']); ?> days</div>
+                <div style="font-weight: 500;"><?php echo UtilityHelper::dateDiffInDays($request['due_date'], $request['return_date']); ?> days</div>
             </div>
-            <?php if (!empty($request['pickup_time'])): ?>
-            <div>
-                <div style="font-weight: 600; font-size: 0.8rem; color: var(--gray-500); margin-bottom: 0.25rem;">Pickup Time</div>
-                <div style="font-weight: 500;"><?php echo date('g:i A', strtotime($request['pickup_time'])); ?></div>
-            </div>
-            <?php endif; ?>
+           
         </div>
         
-        <?php if (!empty($request['notes'])): ?>
-        <div style="margin-bottom: 1.5rem;">
-            <div style="font-weight: 600; font-size: 0.8rem; color: var(--gray-500); margin-bottom: 0.25rem;">Additional Notes</div>
-            <div style="padding: 0.75rem; background-color: var(--gray-50); border-radius: 6px; color: var(--gray-700);">
-                <?php echo nl2br(htmlspecialchars($request['notes'])); ?>
-            </div>
-        </div>
-        <?php endif; ?>
-        
+     
         <?php if ($request['status'] === 'rejected' && !empty($request['rejection_reason'])): ?>
         <div style="margin-bottom: 1.5rem;">
             <div style="font-weight: 600; font-size: 0.8rem; color: var(--gray-500); margin-bottom: 0.25rem;">Rejection Reason</div>
@@ -284,7 +260,7 @@ include 'includes/header.php';
                         <th>Asset ID</th>
                         <th>Location</th>
                         <th>Status</th>
-                        <?php if ($request['status'] === 'checked_out' || $request['status'] === 'partially_returned' || $request['status'] === 'returned'): ?>
+                        <?php if ($request['status'] === 'borrowed'|| $request['status'] === 'returned'): ?>
                         <th>Condition</th>
                         <?php endif; ?>
                     </tr>
@@ -385,22 +361,15 @@ include 'includes/header.php';
                 <div class="timeline-dot active"></div>
                 <div class="timeline-content">
                     <div class="timeline-title">Request Submitted</div>
-                    <div class="timeline-date"><?php echo UtilityHelper::formatDateForDisplay($request['created_at'], 'datetime'); ?></div>
-                    <div>Submitted by: <?php echo htmlspecialchars($request['requester_name']); ?></div>
+                    <div class="timeline-date"><?php echo UtilityHelper::formatDateForDisplay($request['request_date'], 'date'); ?></div>
+                    <div>Submitted by: <?php echo htmlspecialchars($request['name']); ?></div>
                 </div>
             </div>
             
             <!-- Approved/Rejected -->
             <?php if ($request['status'] !== 'pending'): ?>
                 <?php if ($request['status'] === 'approved' || $request['status'] === 'checked_out' || $request['status'] === 'overdue' || $request['status'] === 'partially_returned' || $request['status'] === 'returned'): ?>
-                    <div class="timeline-item">
-                        <div class="timeline-dot active"></div>
-                        <div class="timeline-content">
-                            <div class="timeline-title">Request Approved</div>
-                            <div class="timeline-date"><?php echo UtilityHelper::formatDateForDisplay($request['approved_at'], 'datetime'); ?></div>
-                            <div>Approved by: <?php echo htmlspecialchars($request['approver_name'] ?? 'System'); ?></div>
-                        </div>
-                    </div>
+                    
                 <?php elseif ($request['status'] === 'rejected'): ?>
                     <div class="timeline-item">
                         <div class="timeline-dot active"></div>
@@ -424,16 +393,7 @@ include 'includes/header.php';
             <?php endif; ?>
             
             <!-- Checked Out -->
-            <?php if ($request['status'] === 'checked_out' || $request['status'] === 'overdue' || $request['status'] === 'partially_returned' || $request['status'] === 'returned'): ?>
-                <div class="timeline-item">
-                    <div class="timeline-dot active"></div>
-                    <div class="timeline-content">
-                        <div class="timeline-title">Items Checked Out</div>
-                        <div class="timeline-date"><?php echo UtilityHelper::formatDateForDisplay($request['checked_out_at'], 'datetime'); ?></div>
-                        <div>Checked out by: <?php echo htmlspecialchars($request['checkout_by_name'] ?? 'System'); ?></div>
-                    </div>
-                </div>
-            <?php endif; ?>
+            
             
             <!-- Overdue -->
             <?php if ($request['status'] === 'overdue'): ?>
@@ -453,7 +413,7 @@ include 'includes/header.php';
                     <div class="timeline-dot active"></div>
                     <div class="timeline-content">
                         <div class="timeline-title">Items Partially Returned</div>
-                        <div class="timeline-date"><?php echo UtilityHelper::formatDateForDisplay($request['updated_at'], 'datetime'); ?></div>
+                        <div class="timeline-date"><?php echo UtilityHelper::formatDateForDisplay($request['return_date'], 'datetime'); ?></div>
                         <div>Some items have been returned. Remaining items are still checked out.</div>
                     </div>
                 </div>
@@ -465,8 +425,8 @@ include 'includes/header.php';
                     <div class="timeline-dot active"></div>
                     <div class="timeline-content">
                         <div class="timeline-title">All Items Returned</div>
-                        <div class="timeline-date"><?php echo UtilityHelper::formatDateForDisplay($request['returned_at'], 'datetime'); ?></div>
-                        <div>Returned by: <?php echo htmlspecialchars($request['returned_by_name'] ?? 'System'); ?></div>
+                        <div class="timeline-date"><?php echo UtilityHelper::formatDateForDisplay($request['return_date'], 'datetime'); ?></div>
+                        <div>Returned by: <?php echo htmlspecialchars($request['name'] ?? 'System'); ?></div>
                     </div>
                 </div>
             <?php endif; ?>

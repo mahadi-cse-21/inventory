@@ -1,4 +1,7 @@
 <?php
+
+//require_once(__DIR__ . '/../init.php');
+
 /**
  * Cancel Borrow Request
  * 
@@ -36,7 +39,7 @@ if (!$request) {
 
 // Check if user has permission to cancel this request
 $hasPermission = ($request['user_id'] == $currentUser['id']) || 
-                hasRole(['admin', 'manager']);
+                hasRole(['admin']);
 
 if (!$hasPermission) {
     setFlashMessage('You do not have permission to cancel this request', 'danger');
@@ -52,7 +55,9 @@ if ($request['status'] !== 'pending') {
 }
 
 // Cancel the request
-$result = BorrowHelper::updateBorrowRequestStatus($requestId, 'cancelled', $currentUser['id']);
+$result = BorrowHelper::updateBorrowRequestStatus($requestId, 'rejected', $currentUser['id']);
+
+ // optional: prevent further execution during debugging
 
 if ($result['success']) {
     setFlashMessage('Borrow request cancelled successfully', 'success');

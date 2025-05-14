@@ -20,67 +20,50 @@ class LocationHelper {
     /**
      * Get all locations with pagination and filters
      */
-    public static function getAllLocations($page = 1, $limit = ITEMS_PER_PAGE, $filters = []) {
-        $conn = getDbConnection();
-        
-        // Build query
-        $sql = "SELECT l.*, u.full_name as manager_name,
-                (SELECT COUNT(*) FROM items WHERE location_id = l.id) as item_count
-                FROM locations l 
-                LEFT JOIN users u ON l.manager_id = u.id";
-        
-        $where = [];
-        $params = [];
-        
-        // Apply filters
-        if (!empty($filters['search'])) {
-            $where[] = "(l.name LIKE ? OR l.description LIKE ? OR l.address LIKE ?)";
-            $searchParam = '%' . $filters['search'] . '%';
-            $params[] = $searchParam;
-            $params[] = $searchParam;
-            $params[] = $searchParam;
-        }
-        
-        if (!empty($filters['manager_id'])) {
-            $where[] = "l.manager_id = ?";
-            $params[] = $filters['manager_id'];
-        }
-        
-        if (isset($filters['is_active'])) {
-            $where[] = "l.is_active = ?";
-            $params[] = $filters['is_active'];
-        }
-        
-        // Combine WHERE clauses
-        if (!empty($where)) {
-            $sql .= " WHERE " . implode(" AND ", $where);
-        }
-        
-        // Count total records for pagination
-        $countSql = str_replace("l.*, u.full_name as manager_name,
-                (SELECT COUNT(*) FROM items WHERE location_id = l.id) as item_count", 
-                                "COUNT(*) as total", $sql);
-        $countStmt = $conn->prepare($countSql);
-        $countStmt->execute($params);
-        $totalItems = (int)$countStmt->fetchColumn();
-        
-        // Add order and limit
-        $sql .= " ORDER BY l.name ASC";
-        
-        // Calculate pagination
-        $pagination = UtilityHelper::paginate($totalItems, $page, $limit);
-        $sql .= " LIMIT " . $pagination['offset'] . ", " . $pagination['itemsPerPage'];
-        
-        // Execute query
-        $stmt = $conn->prepare($sql);
-        $stmt->execute($params);
-        $locations = $stmt->fetchAll();
-        
-        return [
-            'locations' => $locations,
-            'pagination' => $pagination
-        ];
+ public static function getAllLocations($page = 1, $limit = ITEMS_PER_PAGE, $filters = []) {
+    // Get the database connection
+    $conn = getDbConnection();
+
+    // Base SQL query to fetch locations
+    $sql = "SELECT id, building_name, room FROM location WHERE 1"; // 'WHERE 1' is used as a placeholder for dynamic conditions
+    
+    // Apply filters if provided
+    if (!empty($filters['building_name'])) {
+        $sql .= " AND building_name LIKE :building_name";
     }
+    if (!empty($filters['room'])) {
+        $sql .= " AND room LIKE :room";
+    }
+
+    // Apply pagination
+    $offset = ($page - 1) * $limit;
+    $sql .= " LIMIT :offset, :limit";
+
+    // Prepare the query
+    $stmt = $conn->prepare($sql);
+
+    // Bind the filters
+    if (!empty($filters['building_name'])) {
+        $stmt->bindValue(':building_name', '%' . $filters['building_name'] . '%', PDO::PARAM_STR);
+    }
+    if (!empty($filters['room'])) {
+        $stmt->bindValue(':room', '%' . $filters['room'] . '%', PDO::PARAM_STR);
+    }
+
+    // Bind pagination parameters
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+
+    // Execute the query
+    $stmt->execute();
+
+    // Fetch all the locations as an associative array
+    $locations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Return the locations
+    return $locations;
+}
+
     
     /**
      * Create a new location

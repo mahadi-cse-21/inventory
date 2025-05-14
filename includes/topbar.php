@@ -8,16 +8,7 @@
             <i class="fas fa-bell"></i>
             <?php 
             // Get unread notifications count
-            $notificationCount = 0;
-            if (isset($_SESSION['user_id'])) {
-                // If you have a notifications table, you can count unread notifications
-                $conn = getDbConnection();
-                $sql = "SELECT COUNT(*) FROM notifications WHERE user_id = ? AND is_read = 0";
-                $stmt = $conn->prepare($sql);
-                $stmt->execute([$_SESSION['user_id']]);
-                $notificationCount = (int)$stmt->fetchColumn();
-            }
-            
+            $notificationCount = 0;     
             if ($notificationCount > 0): 
             ?>
             <span class="notification-badge"><?php echo $notificationCount; ?></span>

@@ -34,21 +34,22 @@
             </a>
         </div>
 
-        <div class="nav-section">
+        <!-- <?php
+         //echo BASE_URL; 
+         ?> -->
+
+        <!-- <div class="nav-section">
             <div class="nav-section-title">Actions</div>
-            <a href="<?php echo BASE_URL; ?>/borrow/create" class="nav-item <?php echo (strpos($_SERVER['REQUEST_URI'], '/borrow/create') !== false) ? 'active' : ''; ?>">
-                <div class="nav-item-icon">
-                    <i class="fas fa-plus-circle"></i>
-                </div>
-                <span>New Borrow Request</span>
-            </a>
-            <a href="<?php echo BASE_URL; ?>/borrow/return" class="nav-item <?php echo (strpos($_SERVER['REQUEST_URI'], '/borrow/return') !== false) ? 'active' : ''; ?>">
+            
+            <a href="
+            
+            /borrow/return" class="nav-item <?php echo (strpos($_SERVER['REQUEST_URI'], '/borrow/return') !== false) ? 'active' : ''; ?>">
                 <div class="nav-item-icon">
                     <i class="fas fa-undo-alt"></i>
                 </div>
-                <span>Return Items</span>
+                <span>Requested Items</span>
             </a>
-        </div>
+        </div> -->
 
         <?php if (hasRole(['admin', 'manager'])): ?>
         <div class="nav-section">
@@ -57,13 +58,13 @@
                 <div class="nav-item-icon">
                     <i class="fas fa-box"></i>
                 </div>
-                <span>Inventory</span>
+                <span>Items</span>
             </a>
             <a href="<?php echo BASE_URL; ?>/borrow/requests" class="nav-item <?php echo (strpos($_SERVER['REQUEST_URI'], '/borrow/requests') !== false) ? 'active' : ''; ?>">
                 <div class="nav-item-icon">
                     <i class="fas fa-hand-holding"></i>
                 </div>
-                <span>Borrow Requests</span>
+                <span>Borrowed Items</span>
             </a>
             <a href="<?php echo BASE_URL; ?>/maintenance" class="nav-item <?php echo (strpos($_SERVER['REQUEST_URI'], '/maintenance') !== false) ? 'active' : ''; ?>">
                 <div class="nav-item-icon">
@@ -84,12 +85,7 @@
                 </div>
                 <span>Users</span>
             </a>
-            <a href="<?php echo BASE_URL; ?>/settings" class="nav-item <?php echo (strpos($_SERVER['REQUEST_URI'], '/settings') !== false) ? 'active' : ''; ?>">
-                <div class="nav-item-icon">
-                    <i class="fas fa-cog"></i>
-                </div>
-                <span>Settings</span>
-            </a>
+          
             <?php endif; ?>
         </div>
         <?php endif; ?>

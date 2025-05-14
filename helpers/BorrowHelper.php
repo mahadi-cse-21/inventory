@@ -3,32 +3,32 @@ class BorrowHelper {
     /**
      * Get borrow request by ID
      */
-    public static function getBorrowRequestById($requestId) {
-        $conn = getDbConnection();
-        
-        $sql = "SELECT br.*, u.full_name as requester_name, u.email as requester_email, 
-                       d.name as department_name, a.full_name as approver_name,
-                       c.full_name as checkout_by_name, r.full_name as returned_by_name
-                FROM borrow_requests br 
-                LEFT JOIN users u ON br.user_id = u.id 
-                LEFT JOIN departments d ON br.department_id = d.id 
-                LEFT JOIN users a ON br.approved_by = a.id
-                LEFT JOIN users c ON br.checked_out_by = c.id
-                LEFT JOIN users r ON br.returned_by = r.id
-                WHERE br.id = ? OR br.request_id = ?";
-        
-        $stmt = $conn->prepare($sql);
-        $stmt->execute([$requestId, $requestId]);
-        
-        $request = $stmt->fetch();
-        
-        if ($request) {
-            // Get borrowed items
-            $request['items'] = self::getBorrowedItems($request['id']);
-        }
-        
-        return $request;
-    }
+   public static function getBorrowRequestById($requestId) {
+    $conn = getDbConnection();
+
+    $stmt = $conn->prepare("
+        SELECT 
+            r.id,
+            u.name AS name,
+            r.request_date,
+            bi.borrow_date,
+            bi.due_date,
+            bi.return_date,
+            bi.status as status,
+            u.email as requester_email
+        FROM requests r
+        JOIN users u ON r.user_id = u.id
+        JOIN borrowed_item bi ON bi.request_id = r.id
+        WHERE r.id = :requestId
+    ");
+
+    $stmt->execute(['requestId' => $requestId]);
+
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+
+
     
     /**
      * Get borrowed items for a borrow request
@@ -57,91 +57,81 @@ class BorrowHelper {
     public static function getAllBorrowRequests($page = 1, $limit = ITEMS_PER_PAGE, $filters = []) {
         $conn = getDbConnection();
         
-        // Build query
-        $sql = "SELECT br.*, u.full_name as requester_name, d.name as department_name 
-                FROM borrow_requests br 
-                LEFT JOIN users u ON br.user_id = u.id 
-                LEFT JOIN departments d ON br.department_id = d.id";
-        
-        $where = [];
-        $params = [];
-        
-        // Apply filters
-        if (!empty($filters['search'])) {
-            $where[] = "(br.request_id LIKE ? OR u.full_name LIKE ? OR br.purpose LIKE ? OR br.project_name LIKE ?)";
-            $searchParam = '%' . $filters['search'] . '%';
-            $params[] = $searchParam;
-            $params[] = $searchParam;
-            $params[] = $searchParam;
-            $params[] = $searchParam;
-        }
-        
-        if (!empty($filters['user_id'])) {
-            $where[] = "br.user_id = ?";
-            $params[] = $filters['user_id'];
-        }
-        
-        if (!empty($filters['department_id'])) {
-            $where[] = "br.department_id = ?";
-            $params[] = $filters['department_id'];
-        }
-        
-        if (!empty($filters['status'])) {
-            $where[] = "br.status = ?";
-            $params[] = $filters['status'];
-        }
-        
-        if (!empty($filters['borrow_date_from'])) {
-            $where[] = "br.borrow_date >= ?";
-            $params[] = $filters['borrow_date_from'];
-        }
-        
-        if (!empty($filters['borrow_date_to'])) {
-            $where[] = "br.borrow_date <= ?";
-            $params[] = $filters['borrow_date_to'];
-        }
-        
-        if (!empty($filters['return_date_from'])) {
-            $where[] = "br.return_date >= ?";
-            $params[] = $filters['return_date_from'];
-        }
-        
-        if (!empty($filters['return_date_to'])) {
-            $where[] = "br.return_date <= ?";
-            $params[] = $filters['return_date_to'];
-        }
-        
-        // Filter by item if needed
-        if (!empty($filters['item_id'])) {
-            $sql .= " INNER JOIN borrowed_items bi ON br.id = bi.borrow_request_id";
-            $where[] = "bi.item_id = ?";
-            $params[] = $filters['item_id'];
-        }
-        
-        // Combine WHERE clauses
-        if (!empty($where)) {
-            $sql .= " WHERE " . implode(" AND ", $where);
-        }
-        
-        // Count total records for pagination
-        $countSql = str_replace("br.*, u.full_name as requester_name, d.name as department_name", 
-                                "COUNT(DISTINCT br.id) as total", $sql);
-        $countStmt = $conn->prepare($countSql);
-        $countStmt->execute($params);
-        $totalItems = (int)$countStmt->fetchColumn();
-        
-        // Add order and limit
-        $sql .= " GROUP BY br.id ORDER BY br.created_at DESC";
-        
-        // Calculate pagination
-        $pagination = UtilityHelper::paginate($totalItems, $page, $limit);
-        $sql .= " LIMIT " . $pagination['offset'] . ", " . $pagination['itemsPerPage'];
-        
-        // Execute query
-        $stmt = $conn->prepare($sql);
-        $stmt->execute($params);
-        $requests = $stmt->fetchAll();
-        
+      $sql = "SELECT 
+            r.id, 
+            u.name AS name, 
+            r.request_date,
+            i.name as item, 
+            r.status AS status
+        FROM requests r
+        JOIN users u ON r.user_id = u.id
+        JOIN item i ON r.item_id = i.id";
+
+$where = [];
+$params = [];
+
+// Apply filters
+if (!empty($filters['search'])) {
+    $where[] = "(r.id LIKE ? OR u.name LIKE ?)";
+    $searchParam = '%' . $filters['search'] . '%';
+    $params[] = $searchParam;
+    $params[] = $searchParam;
+}
+
+if (!empty($filters['user_id'])) {
+    $where[] = "r.user_id = ?";
+    $params[] = $filters['user_id'];
+}
+
+if (!empty($filters['status'])) {
+    $where[] = "r.status = ?";
+    $params[] = $filters['status'];
+}
+
+if (!empty($filters['request_date_from'])) {
+    $where[] = "r.request_date >= ?";
+    $params[] = $filters['request_date_from'];
+}
+
+if (!empty($filters['request_date_to'])) {
+    $where[] = "r.request_date <= ?";
+    $params[] = $filters['request_date_to'];
+}
+
+if (!empty($filters['item_id'])) {
+    $where[] = "i.id = ?";
+    $params[] = $filters['item_id'];
+}
+
+// Combine WHERE clauses
+if (!empty($where)) {
+    $sql .= " WHERE " . implode(" AND ", $where);
+}
+
+// Count total records
+$countSql = "SELECT COUNT(DISTINCT r.id) as total
+             FROM requests r
+             JOIN users u ON r.user_id = u.id
+             JOIN item i ON r.item_id = i.id";
+
+if (!empty($where)) {
+    $countSql .= " WHERE " . implode(" AND ", $where);
+}
+
+$countStmt = $conn->prepare($countSql);
+$countStmt->execute($params);
+$totalItems = (int)$countStmt->fetchColumn();
+
+// Add order and limit
+$sql .= " ORDER BY r.request_date ASC";
+$pagination = UtilityHelper::paginate($totalItems, $page, $limit);
+$sql .= " LIMIT " . $pagination['offset'] . ", " . $pagination['itemsPerPage'];
+
+// Execute final query
+$stmt = $conn->prepare($sql);
+$stmt->execute($params);
+$requests = $stmt->fetchAll();
+
         return [
             'requests' => $requests,
             'pagination' => $pagination
@@ -255,138 +245,33 @@ class BorrowHelper {
     /**
      * Approve or reject a borrow request
      */
-    public static function updateBorrowRequestStatus($requestId, $status, $userId, $notes = null) {
-        $conn = getDbConnection();
-        
-        // Check if request exists
-        $request = self::getBorrowRequestById($requestId);
-        if (!$request) {
-            return [
-                'success' => false,
-                'message' => 'Borrow request not found'
-            ];
-        }
-        
-        // Begin transaction
-        $conn->beginTransaction();
-        
-        try {
-            // Update request status
-            $updateFields = [
-                'status = ?',
-                'updated_at = NOW()'
-            ];
-            $params = [$status];
-            
-            // Add action-specific fields
-            switch ($status) {
-                case 'approved':
-                    $updateFields[] = 'approved_by = ?';
-                    $updateFields[] = 'approved_at = NOW()';
-                    $params[] = $userId;
-                    $action = 'approve_borrow_request';
-                    $logMessage = 'Borrow request approved';
-                    break;
-                    
-                case 'rejected':
-                    $updateFields[] = 'rejection_reason = ?';
-                    $params[] = $notes;
-                    $action = 'reject_borrow_request';
-                    $logMessage = 'Borrow request rejected';
-                    break;
-                    
-                case 'cancelled':
-                    $action = 'cancel_borrow_request';
-                    $logMessage = 'Borrow request cancelled';
-                    break;
-                    
-                case 'checked_out':
-                    $updateFields[] = 'checked_out_by = ?';
-                    $updateFields[] = 'checked_out_at = NOW()';
-                    $params[] = $userId;
-                    $action = 'checkout_borrow_request';
-                    $logMessage = 'Items checked out';
-                    break;
-                    
-                case 'returned':
-                    $updateFields[] = 'returned_by = ?';
-                    $updateFields[] = 'returned_at = NOW()';
-                    $params[] = $userId;
-                    $action = 'return_borrow_request';
-                    $logMessage = 'Items returned';
-                    break;
-                    
-                default:
-                    $action = 'update_borrow_request';
-                    $logMessage = 'Borrow request updated';
-            }
-            
-            // Add request ID
-            $params[] = $request['id'];
-            
-            // Update request
-            $sql = "UPDATE borrow_requests SET " . implode(", ", $updateFields) . " WHERE id = ?";
-            $stmt = $conn->prepare($sql);
-            $result = $stmt->execute($params);
-            
-            if (!$result) {
-                throw new Exception('Failed to update borrow request status');
-            }
-            
-            // Update individual borrowed items if checked out or returned
-            if ($status === 'checked_out' || $status === 'returned') {
-                $itemStatus = ($status === 'checked_out') ? 'checked_out' : 'returned';
-                $itemSql = "UPDATE borrowed_items SET status = ? WHERE borrow_request_id = ?";
-                $itemStmt = $conn->prepare($itemSql);
-                $itemStmt->execute([$itemStatus, $request['id']]);
-                
-                // Also update items table
-                foreach ($request['items'] as $item) {
-                    $itemTableStatus = ($status === 'checked_out') ? 'borrowed' : 'available';
-                    $updateItemSql = "UPDATE items SET status = ? WHERE id = ?";
-                    $updateItemStmt = $conn->prepare($updateItemSql);
-                    $updateItemStmt->execute([$itemTableStatus, $item['item_id']]);
-                    
-                    // Log inventory transaction
-                    $transactionType = ($status === 'checked_out') ? 'check_out' : 'check_in';
-                    $transactionData = [
-                        'item_id' => $item['item_id'],
-                        'transaction_type' => $transactionType,
-                        'quantity' => $item['quantity'],
-                        'related_record_type' => 'borrow_requests',
-                        'related_record_id' => $request['id'],
-                        'notes' => $notes
-                    ];
-                    InventoryHelper::logInventoryTransaction($transactionData);
-                }
-            }
-            
-            // Log activity
-            UtilityHelper::logActivity(
-                $userId,
-                $action, 
-                'borrow_requests', 
-                $request['id'], 
-                $logMessage . ': ' . $request['request_id']
-            );
-            
-            // Commit transaction
-            $conn->commit();
-            
-            return [
-                'success' => true,
-                'message' => $logMessage . ' successfully'
-            ];
-        } catch (Exception $e) {
-            // Rollback transaction on error
-            $conn->rollBack();
-            
-            return [
-                'success' => false,
-                'message' => 'Failed to update borrow request: ' . $e->getMessage()
-            ];
-        }
+ public static function updateBorrowRequestStatus($requestId, $status, $userId, $notes = null) {
+    $conn = getDbConnection();
+
+    try {
+        $stmt = $conn->prepare("
+            UPDATE requests
+            SET status = :status
+               
+            WHERE id = :requestId
+        ");
+
+        $stmt->execute([
+            'status' => $status,
+          
+           
+            'requestId' => $requestId
+        ]);
+
+        return ['success' => true];
+    } catch (PDOException $e) {
+        return [
+            'success' => false,
+            'message' => 'Error updating borrow request: ' . $e->getMessage()
+        ];
     }
+}
+
     
     /**
      * Return specific items from a borrow request
@@ -409,7 +294,7 @@ class BorrowHelper {
         try {
             foreach ($itemsData as $itemData) {
                 // Update borrowed item
-                $updateItemSql = "UPDATE borrowed_items 
+                $updateItemSql = "UPDATE borrowed_item 
                                   SET status = 'returned', 
                                       condition_after = ?, 
                                       return_notes = ?, 
@@ -433,7 +318,7 @@ class BorrowHelper {
                 // Log inventory transaction
                 $transactionData = [
                     'item_id' => $itemData['item_id'],
-                    'transaction_type' => 'check_in',
+               
                     'quantity' => 1,
                     'related_record_type' => 'borrow_requests',
                     'related_record_id' => $borrowRequestId,
@@ -461,7 +346,7 @@ class BorrowHelper {
                 $updateRequestStmt->execute([$userId, $borrowRequestId]);
             } else {
                 // Set to partially returned
-                $updateRequestSql = "UPDATE borrow_requests 
+                $updateRequestSql = "UPDATE requests 
                                      SET status = 'partially_returned', 
                                          updated_at = NOW() 
                                      WHERE id = ?";
@@ -501,46 +386,33 @@ class BorrowHelper {
     /**
      * Get user's currently borrowed items
      */
-    public static function getUserBorrowedItems($userId) {
-        $conn = getDbConnection();
-        
-        $sql = "SELECT bi.*, i.name as item_name, i.asset_id, i.barcode, 
-                       c.name as category_name, br.borrow_date, br.return_date, 
-                       br.request_id, br.status as request_status 
-                FROM borrowed_items bi 
-                JOIN borrow_requests br ON bi.borrow_request_id = br.id 
-                JOIN items i ON bi.item_id = i.id 
-                LEFT JOIN categories c ON i.category_id = c.id 
-                WHERE br.user_id = ? 
-                AND (bi.status = 'checked_out' OR bi.status = 'pending') 
-                AND (br.status = 'checked_out' OR br.status = 'approved' OR br.status = 'partially_returned')
-                ORDER BY br.return_date ASC";
-        
-        $stmt = $conn->prepare($sql);
-        $stmt->execute([$userId]);
-        
-        return $stmt->fetchAll();
-    }
-    
+   public static function getUserBorrowedItems($userId) {
+    $conn = getDbConnection();
+    if (!$conn) return [];
+
+    $sql = "SELECT bi.id ,i.name as name, r.id as request_id , bi.borrow_date, bi.due_date,bi.status as status,bi.return_date as return_date
+      from borrowed_item bi
+      join requests r join item i
+      where bi.request_id = r.id and i.id = r.item_id and r.user_id=? ";
+
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([$userId]);
+
+    return $stmt->fetchAll();
+}
+
     /**
      * Get user's overdue items
      */
     public static function getUserOverdueItems($userId) {
         $conn = getDbConnection();
         
-        $sql = "SELECT bi.*, i.name as item_name, i.asset_id, i.barcode, 
-                       c.name as category_name, br.borrow_date, br.return_date, 
-                       br.request_id, br.status as request_status,
-                       DATEDIFF(CURRENT_DATE(), br.return_date) as days_overdue
-                FROM borrowed_items bi 
-                JOIN borrow_requests br ON bi.borrow_request_id = br.id 
-                JOIN items i ON bi.item_id = i.id 
-                LEFT JOIN categories c ON i.category_id = c.id 
-                WHERE br.user_id = ? 
-                AND bi.status = 'checked_out' 
-                AND br.return_date < CURRENT_DATE()
-                AND (br.status = 'checked_out' OR br.status = 'overdue')
-                ORDER BY br.return_date ASC";
+        $sql = "SELECT *
+        FROM borrowed_item bi 
+        join requests r join item i
+        WHERE bi.status = 'borrowed' and r.item_id = i.id
+        AND return_date IS NULL and r.user_id=?";
+
         
         $stmt = $conn->prepare($sql);
         $stmt->execute([$userId]);
@@ -555,11 +427,12 @@ class BorrowHelper {
         $conn = getDbConnection();
         
         // Find overdue requests
-        $sql = "SELECT id, request_id, user_id 
-                FROM borrow_requests 
-                WHERE status = 'checked_out' 
-                AND return_date < CURRENT_DATE()";
-        
+        $sql = "SELECT bi.id, bi.request_id
+        FROM borrowed_item bi
+        JOIN requests br ON bi.request_id = br.id
+        WHERE bi.status = 'borrowd'
+        AND bi.return_date < CURRENT_DATE()";
+
         $stmt = $conn->prepare($sql);
         $stmt->execute();
         $overdueRequests = $stmt->fetchAll();

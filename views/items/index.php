@@ -23,7 +23,7 @@ $filters = [
     'category_id' => isset($_GET['category']) ? (int)$_GET['category'] : '',
     'location_id' => isset($_GET['location']) ? (int)$_GET['location'] : '',
     'status' => isset($_GET['status']) ? cleanInput($_GET['status']) : '',
-    'supplier_id' => isset($_GET['supplier']) ? (int)$_GET['supplier'] : ''
+    
 ];
 
 // Get all items with pagination
@@ -36,10 +36,6 @@ $categories = InventoryHelper::getAllCategories();
 
 // Get locations for filter
 $locationResult = LocationHelper::getAllLocations(1, 100, ['is_active' => 1]);
-$locations = $locationResult['locations'];
-
-// Get suppliers for filter
-$suppliers = InventoryHelper::getAllSuppliers();
 
 // Include header
 include 'includes/header.php';
@@ -176,28 +172,8 @@ include 'includes/header.php';
                         <option value="retired" <?php echo ($filters['status'] == 'retired') ? 'selected' : ''; ?>>Retired</option>
                     </select>
                 </div>
-                <div class="form-col">
-                    <label class="form-label">Location</label>
-                    <select class="form-control" name="location" id="location-filter">
-                        <option value="">All Locations</option>
-                        <?php foreach ($locations as $location): ?>
-                            <option value="<?php echo $location['id']; ?>" <?php echo ($filters['location_id'] == $location['id']) ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($location['name']); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div class="form-col">
-                    <label class="form-label">Supplier</label>
-                    <select class="form-control" name="supplier" id="supplier-filter">
-                        <option value="">All Suppliers</option>
-                        <?php foreach ($suppliers as $supplier): ?>
-                            <option value="<?php echo $supplier['id']; ?>" <?php echo ($filters['supplier_id'] == $supplier['id']) ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($supplier['name']); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
+
+                
             </div>
             <div class="form-row" style="margin-top: 1rem;">
                 <div class="form-col" style="flex: 2;">
@@ -249,7 +225,7 @@ include 'includes/header.php';
                         <th>Category</th>
                         <th>Location</th>
                         <th>Status</th>
-                        <th>Condition</th>
+
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -261,7 +237,7 @@ include 'includes/header.php';
                                     <input type="checkbox" class="form-check-input item-checkbox" value="<?php echo $item['id']; ?>">
                                 </div>
                             </td>
-                            <td><?php echo !empty($item['asset_id']) ? htmlspecialchars($item['asset_id']) : '-'; ?></td>
+                            <td><?php echo !empty($item['id']) ? htmlspecialchars($item['id']) : '-'; ?></td>
                             <td>
                                 <div style="display: flex; align-items: center;">
                                     <div style="width: 40px; height: 40px; background-color: var(--gray-100); border-radius: 4px; margin-right: 10px; display: flex; align-items: center; justify-content: center;">
@@ -326,22 +302,7 @@ include 'includes/header.php';
                                 ?>
                                 <span class="badge <?php echo $statusClass; ?>"><?php echo $statusText; ?></span>
                             </td>
-                            <td>
-                                <?php 
-                                $conditionClass = 'badge-green';
-                                
-                                if ($item['condition_rating'] === 'excellent' || $item['condition_rating'] === 'new') {
-                                    $conditionClass = 'badge-green';
-                                } elseif ($item['condition_rating'] === 'good') {
-                                    $conditionClass = 'badge-blue';
-                                } elseif ($item['condition_rating'] === 'fair') {
-                                    $conditionClass = 'badge-orange';
-                                } elseif ($item['condition_rating'] === 'poor' || $item['condition_rating'] === 'damaged') {
-                                    $conditionClass = 'badge-red';
-                                }
-                                ?>
-                                <span class="badge <?php echo $conditionClass; ?>"><?php echo ucfirst(htmlspecialchars($item['condition_rating'])); ?></span>
-                            </td>
+                          
                             <td>
                                 <div class="dropdown">
                                     <button class="btn btn-sm btn-outline dropdown-toggle">

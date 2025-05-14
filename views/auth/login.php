@@ -53,7 +53,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $stmt->execute([$userId, password_hash($token, PASSWORD_DEFAULT), $expiry]);
                 
                 // Set cookie
-                setcookie('remember_token', $userId . ':' . $token, $expiry, '/', '', false, true);
             }
             
             // Set success message and redirect

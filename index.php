@@ -63,6 +63,7 @@ $routes = [
     'borrow/history' => 'views/borrow/history.php',
     'borrow/return' => 'views/borrow/return.php',
     'borrow/requests' => 'views/borrow/requests.php',
+    'borrow/cancel' => 'views/borrow/cancel.php',
     // 'borrow/view-request' => 'views/borrow/view_request.php',
     'borrow/process-request' => 'views/borrow/process_request.php',
     'borrow/view' => 'views/borrow/view.php', // Add this line to support /borrow/view?id=X

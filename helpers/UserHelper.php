@@ -449,17 +449,6 @@ class UserHelper {
      * Get all departments
      */
     public static function getAllDepartments() {
-        $conn = getDbConnection();
-        
-        $sql = "SELECT d.*, u.full_name as manager_name 
-                FROM departments d 
-                LEFT JOIN users u ON d.manager_id = u.id 
-                WHERE d.is_active = 1 
-                ORDER BY d.name ASC";
-        
-        $stmt = $conn->prepare($sql);
-        $stmt->execute();
-        
-        return $stmt->fetchAll();
+       
     }
 }

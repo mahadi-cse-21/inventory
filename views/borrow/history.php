@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Borrow Request History View
  * 
@@ -110,9 +111,8 @@ include 'includes/header.php';
                     <thead>
                         <tr>
                             <th>Request ID</th>
-                            <th>Purpose</th>
+                            <th>Item</th>
                             <th>Request Date</th>
-                            <th>Borrow Period</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -121,30 +121,16 @@ include 'includes/header.php';
                         <?php foreach ($requests as $request): ?>
                             <tr>
                                 <td>
-                                    <span style="font-weight: 500; color: var(--primary);"><?php echo htmlspecialchars($request['request_id']); ?></span>
+                                    <span style="font-weight: 500; color: var(--primary);"><?php echo htmlspecialchars($request['id']); ?></span>
+                                </td>
+                                <td><?php echo $request['item']; ?></td>
+                                <td>
+                                    <?php echo UtilityHelper::formatDateForDisplay($request['request_date'], 'short'); ?>
                                 </td>
                                 <td>
-                                    <?php echo htmlspecialchars($request['purpose']); ?>
-                                    <?php if (!empty($request['project_name'])): ?>
-                                        <div style="font-size: 0.85rem; color: var(--gray-600);">
-                                            Project: <?php echo htmlspecialchars($request['project_name']); ?>
-                                        </div>
-                                    <?php endif; ?>
-                                </td>
-                                <td>
-                                    <?php echo UtilityHelper::formatDateForDisplay($request['created_at'], 'short'); ?>
-                                </td>
-                                <td>
-                                    <?php echo UtilityHelper::formatDateForDisplay($request['borrow_date'], 'short'); ?> - 
-                                    <?php echo UtilityHelper::formatDateForDisplay($request['return_date'], 'short'); ?>
-                                    <div style="font-size: 0.85rem; color: var(--gray-600);">
-                                        <?php echo UtilityHelper::dateDiffInDays($request['borrow_date'], $request['return_date']); ?> days
-                                    </div>
-                                </td>
-                                <td>
-                                    <?php 
+                                    <?php
                                     $badgeClass = 'badge-blue';
-                                    
+
                                     switch ($request['status']) {
                                         case 'pending':
                                             $badgeClass = 'badge-blue';
@@ -158,18 +144,6 @@ include 'includes/header.php';
                                         case 'cancelled':
                                             $badgeClass = 'badge-gray';
                                             break;
-                                        case 'checked_out':
-                                            $badgeClass = 'badge-purple';
-                                            break;
-                                        case 'overdue':
-                                            $badgeClass = 'badge-orange';
-                                            break;
-                                        case 'partially_returned':
-                                            $badgeClass = 'badge-yellow';
-                                            break;
-                                        case 'returned':
-                                            $badgeClass = 'badge-green';
-                                            break;
                                     }
                                     ?>
                                     <span class="badge <?php echo $badgeClass; ?>">
@@ -177,30 +151,31 @@ include 'includes/header.php';
                                     </span>
                                 </td>
                                 <td>
-                                    <a href="<?php echo BASE_URL; ?>/borrow/view?id=<?php echo $request['id']; ?>" class="btn btn-sm btn-outline">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    
                                     <?php if ($request['status'] === 'pending'): ?>
-                                        <a href="<?php echo BASE_URL; ?>/borrow/cancel?id=<?php echo $request['id']; ?>" class="btn btn-sm btn-outline" 
-                                           onclick="return confirm('Are you sure you want to cancel this request?');">
+                                        <!-- Approve button -->
+                                        <a href="<?php echo BASE_URL; ?>/borrow/approve?id=<?php echo $request['id']; ?>"
+                                            class="btn btn-sm btn-success"
+                                            onclick="return confirm('Are you sure you want to approve this request?');">
+                                            <i class="fas fa-check"></i>
+                                        </a>
+
+                                        <!-- Cancel button -->
+                                        <a href="<?php echo BASE_URL; ?>/borrow/cancel?id=<?php echo $request['id']; ?>"
+                                            class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Are you sure you want to cancel this request?');">
                                             <i class="fas fa-times"></i>
                                         </a>
-                                    <?php endif; ?>
-                                    
-                                    <?php if ($request['status'] === 'checked_out' || $request['status'] === 'partially_returned' || $request['status'] === 'overdue'): ?>
-                                        <a href="<?php echo BASE_URL; ?>/borrow/return?id=<?php echo $request['id']; ?>" class="btn btn-sm btn-primary">
-                                            <i class="fas fa-undo-alt"></i>
-                                        </a>
+
                                     <?php endif; ?>
                                 </td>
+
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
             </div>
         </div>
-        
+
         <!-- Pagination -->
         <?php if ($pagination['totalPages'] > 1): ?>
             <div class="panel-footer">
@@ -219,7 +194,7 @@ include 'includes/header.php';
                         // Calculate page range to display
                         $startPage = max(1, $pagination['currentPage'] - 2);
                         $endPage = min($pagination['totalPages'], $pagination['currentPage'] + 2);
-                        
+
                         // Always show first page
                         if ($startPage > 1) {
                             echo '<a href="' . BASE_URL . '/borrow/history?page=1&status=' . $filters['status'] . '&date_from=' . $filters['date_from'] . '&date_to=' . $filters['date_to'] . '&search=' . urlencode($filters['search']) . '" class="btn btn-sm btn-outline">1</a>';
@@ -227,7 +202,7 @@ include 'includes/header.php';
                                 echo '<span style="margin: 0 0.5rem;">...</span>';
                             }
                         }
-                        
+
                         // Display page numbers
                         for ($i = $startPage; $i <= $endPage; $i++) {
                             if ($i == $pagination['currentPage']) {
@@ -236,7 +211,7 @@ include 'includes/header.php';
                                 echo '<a href="' . BASE_URL . '/borrow/history?page=' . $i . '&status=' . $filters['status'] . '&date_from=' . $filters['date_from'] . '&date_to=' . $filters['date_to'] . '&search=' . urlencode($filters['search']) . '" class="btn btn-sm btn-outline">' . $i . '</a>';
                             }
                         }
-                        
+
                         // Always show last page
                         if ($endPage < $pagination['totalPages']) {
                             if ($endPage < $pagination['totalPages'] - 1) {
@@ -270,41 +245,41 @@ include 'includes/header.php';
 <?php endif; ?>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Auto-submit form when filters change
-    const statusFilter = document.getElementById('status-filter');
-    
-    statusFilter.addEventListener('change', function() {
-        document.getElementById('filter-form').submit();
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-submit form when filters change
+        const statusFilter = document.getElementById('status-filter');
+
+        statusFilter.addEventListener('change', function() {
+            document.getElementById('filter-form').submit();
+        });
     });
-});
 </script>
 
 <style>
-.empty-state {
-    text-align: center;
-    padding: 4rem 2rem;
-    background-color: var(--gray-50);
-    border-radius: 8px;
-    margin-top: 2rem;
-}
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background-color: var(--gray-50);
+        border-radius: 8px;
+        margin-top: 2rem;
+    }
 
-.empty-state-icon {
-    font-size: 3rem;
-    color: var(--gray-400);
-    margin-bottom: 1rem;
-}
+    .empty-state-icon {
+        font-size: 3rem;
+        color: var(--gray-400);
+        margin-bottom: 1rem;
+    }
 
-.empty-state h3 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-}
+    .empty-state h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
 
-.empty-state p {
-    color: var(--gray-500);
-    margin-bottom: 1.5rem;
-}
+    .empty-state p {
+        color: var(--gray-500);
+        margin-bottom: 1.5rem;
+    }
 </style>
 
 <?php

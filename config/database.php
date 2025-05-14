@@ -1,11 +1,10 @@
 <?php
 // Database configuration
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'inventory_pro_1');
+define('DB_NAME', 'inventory');
 define('DB_USER', 'root');         // Change according to your setup
 define('DB_PASS', '');             // Change according to your setup
 define('DB_CHARSET', 'utf8mb4');
-
 // Establish database connection
 function getDbConnection() {
     static $conn = null;

@@ -20,63 +20,18 @@ CREATE TABLE `users` (
   `email` VARCHAR(100) NOT NULL,
   `full_name` VARCHAR(100) NOT NULL,
   `phone` VARCHAR(20) NULL,
-  `department_id` INT NULL,
-  `job_title` VARCHAR(100) NULL,
-  `location_id` INT NULL,
-  `role` ENUM('admin', 'manager', 'user') NOT NULL DEFAULT 'user',
+ 
+  `role` ENUM('admin', 'user') NOT NULL DEFAULT 'user',
   `is_active` TINYINT(1) NOT NULL DEFAULT 1,
-  `last_login` DATETIME NULL,
-  `failed_login_attempts` INT NOT NULL DEFAULT 0,
-  `account_locked` TINYINT(1) NOT NULL DEFAULT 0,
-  `password_reset_token` VARCHAR(100) NULL,
-  `password_reset_expires` DATETIME NULL,
-  `created_at` DATETIME NOT NULL,
-  `created_by` INT NULL,
-  `updated_at` DATETIME NULL,
-  `updated_by` INT NULL,
+  `created_at` DATE NOT NULL,
+
+  `updated_at` DATE NULL,
+
   PRIMARY KEY (`id`),
   UNIQUE INDEX `username_UNIQUE` (`username` ASC),
   UNIQUE INDEX `email_UNIQUE` (`email` ASC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- -----------------------------------------------------
--- Table `remember_tokens`
--- -----------------------------------------------------
-CREATE TABLE `remember_tokens` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `user_id` INT NOT NULL,
-  `token` VARCHAR(255) NOT NULL,
-  `expires_at` DATETIME NOT NULL,
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  INDEX `fk_remember_tokens_user_id_idx` (`user_id` ASC),
-  CONSTRAINT `fk_remember_tokens_user_id`
-    FOREIGN KEY (`user_id`)
-    REFERENCES `users` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- -----------------------------------------------------
--- Table `departments`
--- -----------------------------------------------------
-CREATE TABLE `departments` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(100) NOT NULL,
-  `description` TEXT NULL,
-  `manager_id` INT NULL,
-  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
-  `created_at` DATETIME NOT NULL,
-  `updated_at` DATETIME NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `name_UNIQUE` (`name` ASC),
-  INDEX `fk_departments_manager_id_idx` (`manager_id` ASC),
-  CONSTRAINT `fk_departments_manager_id`
-    FOREIGN KEY (`manager_id`)
-    REFERENCES `users` (`id`)
-    ON DELETE SET NULL
-    ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- -----------------------------------------------------
 -- Table `locations`
@@ -92,40 +47,14 @@ CREATE TABLE `locations` (
   `capacity` INT NULL,
   `manager_id` INT NULL,
   `is_active` TINYINT(1) NOT NULL DEFAULT 1,
-  `created_at` DATETIME NOT NULL,
-  `updated_at` DATETIME NULL,
+  `created_at` DATE NOT NULL,
+  `updated_at` DATE NULL,
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `name_UNIQUE` (`name` ASC),
-  INDEX `fk_locations_manager_id_idx` (`manager_id` ASC),
-  CONSTRAINT `fk_locations_manager_id`
     FOREIGN KEY (`manager_id`)
     REFERENCES `users` (`id`)
     ON DELETE SET NULL
     ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- Add foreign keys for users table after locations and departments are created
-ALTER TABLE `users`
-ADD CONSTRAINT `fk_users_department_id`
-  FOREIGN KEY (`department_id`)
-  REFERENCES `departments` (`id`)
-  ON DELETE SET NULL
-  ON UPDATE NO ACTION,
-ADD CONSTRAINT `fk_users_location_id`
-  FOREIGN KEY (`location_id`)
-  REFERENCES `locations` (`id`)
-  ON DELETE SET NULL
-  ON UPDATE NO ACTION,
-ADD CONSTRAINT `fk_users_created_by`
-  FOREIGN KEY (`created_by`)
-  REFERENCES `users` (`id`)
-  ON DELETE SET NULL
-  ON UPDATE NO ACTION,
-ADD CONSTRAINT `fk_users_updated_by`
-  FOREIGN KEY (`updated_by`)
-  REFERENCES `users` (`id`)
-  ON DELETE SET NULL
-  ON UPDATE NO ACTION;
 
 -- -----------------------------------------------------
 -- Table `categories`
@@ -135,13 +64,9 @@ CREATE TABLE `categories` (
   `name` VARCHAR(100) NOT NULL,
   `description` TEXT NULL,
   `parent_id` INT NULL,
-  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
   `created_at` DATETIME NOT NULL,
   `updated_at` DATETIME NULL,
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `name_UNIQUE` (`name` ASC),
-  INDEX `fk_categories_parent_id_idx` (`parent_id` ASC),
-  CONSTRAINT `fk_categories_parent_id`
     FOREIGN KEY (`parent_id`)
     REFERENCES `categories` (`id`)
     ON DELETE SET NULL
@@ -173,8 +98,6 @@ CREATE TABLE `suppliers` (
 CREATE TABLE `items` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(100) NOT NULL,
-  `slug` VARCHAR(100) NOT NULL,
-  `asset_id` VARCHAR(50) NULL,
   `category_id` INT NULL,
   `location_id` INT NULL,
   `supplier_id` INT NULL,
@@ -203,155 +126,39 @@ CREATE TABLE `items` (
   UNIQUE INDEX `slug_UNIQUE` (`slug` ASC),
   UNIQUE INDEX `asset_id_UNIQUE` (`asset_id` ASC),
   UNIQUE INDEX `barcode_UNIQUE` (`barcode` ASC),
-  INDEX `fk_items_category_id_idx` (`category_id` ASC),
-  INDEX `fk_items_location_id_idx` (`location_id` ASC),
-  INDEX `fk_items_supplier_id_idx` (`supplier_id` ASC),
-  INDEX `fk_items_created_by_idx` (`created_by` ASC),
-  INDEX `fk_items_updated_by_idx` (`updated_by` ASC),
-  CONSTRAINT `fk_items_category_id`
-    FOREIGN KEY (`category_id`)
-    REFERENCES `categories` (`id`)
-    ON DELETE SET NULL
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_items_location_id`
-    FOREIGN KEY (`location_id`)
-    REFERENCES `locations` (`id`)
-    ON DELETE SET NULL
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_items_supplier_id`
-    FOREIGN KEY (`supplier_id`)
-    REFERENCES `suppliers` (`id`)
-    ON DELETE SET NULL
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_items_created_by`
-    FOREIGN KEY (`created_by`)
-    REFERENCES `users` (`id`)
-    ON DELETE SET NULL
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_items_updated_by`
-    FOREIGN KEY (`updated_by`)
-    REFERENCES `users` (`id`)
-    ON DELETE SET NULL
-    ON UPDATE NO ACTION
+
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- -----------------------------------------------------
--- Table `tags`
--- -----------------------------------------------------
-CREATE TABLE `tags` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(50) NOT NULL,
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `name_UNIQUE` (`name` ASC)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- -----------------------------------------------------
--- Table `item_tags`
--- -----------------------------------------------------
-CREATE TABLE `item_tags` (
-  `item_id` INT NOT NULL,
-  `tag_id` INT NOT NULL,
-  PRIMARY KEY (`item_id`, `tag_id`),
-  INDEX `fk_item_tags_tag_id_idx` (`tag_id` ASC),
-  CONSTRAINT `fk_item_tags_item_id`
-    FOREIGN KEY (`item_id`)
-    REFERENCES `items` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_item_tags_tag_id`
-    FOREIGN KEY (`tag_id`)
-    REFERENCES `tags` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- -----------------------------------------------------
 -- Table `item_images`
 -- -----------------------------------------------------
-CREATE TABLE `item_images` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `item_id` INT NOT NULL,
-  `file_path` VARCHAR(255) NOT NULL,
-  `file_name` VARCHAR(255) NOT NULL,
-  `file_size` INT NULL,
-  `file_type` VARCHAR(50) NULL,
-  `is_primary` TINYINT(1) NOT NULL DEFAULT 0,
-  `display_order` INT NOT NULL DEFAULT 0,
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  INDEX `fk_item_images_item_id_idx` (`item_id` ASC),
-  CONSTRAINT `fk_item_images_item_id`
-    FOREIGN KEY (`item_id`)
-    REFERENCES `items` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- -----------------------------------------------------
 -- Table `borrow_requests`
 -- -----------------------------------------------------
 CREATE TABLE `borrow_requests` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `request_id` VARCHAR(20) NOT NULL,
   `user_id` INT NOT NULL,
-  `department_id` INT NULL,
   `purpose` VARCHAR(255) NOT NULL,
   `project_name` VARCHAR(100) NULL,
   `borrow_date` DATE NOT NULL,
-  `return_date` DATE NOT NULL,
+  `due_date` DATE NOT NULL,
   `pickup_time` TIME NULL,
   `return_time` TIME NULL,
-  `actual_return_date` DATE NULL,
+  `return_date` DATE NULL,
   `status` ENUM('pending', 'approved', 'rejected', 'cancelled', 'checked_out', 'overdue', 'partially_returned', 'returned') NOT NULL DEFAULT 'pending',
-  `notes` TEXT NULL,
+
   `approved_by` INT NULL,
-  `approved_at` DATETIME NULL,
-  `checked_out_by` INT NULL,
-  `checked_out_at` DATETIME NULL,
-  `returned_by` INT NULL,
-  `returned_at` DATETIME NULL,
-  `rejection_reason` TEXT NULL,
-  `created_at` DATETIME NOT NULL,
-  `updated_at` DATETIME NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `request_id_UNIQUE` (`request_id` ASC),
-  INDEX `fk_borrow_requests_user_id_idx` (`user_id` ASC),
-  INDEX `fk_borrow_requests_department_id_idx` (`department_id` ASC),
-  INDEX `fk_borrow_requests_approved_by_idx` (`approved_by` ASC),
-  INDEX `fk_borrow_requests_checked_out_by_idx` (`checked_out_by` ASC),
-  INDEX `fk_borrow_requests_returned_by_idx` (`returned_by` ASC),
-  CONSTRAINT `fk_borrow_requests_user_id`
-    FOREIGN KEY (`user_id`)
-    REFERENCES `users` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_borrow_requests_department_id`
-    FOREIGN KEY (`department_id`)
-    REFERENCES `departments` (`id`)
-    ON DELETE SET NULL
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_borrow_requests_approved_by`
-    FOREIGN KEY (`approved_by`)
-    REFERENCES `users` (`id`)
-    ON DELETE SET NULL
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_borrow_requests_checked_out_by`
-    FOREIGN KEY (`checked_out_by`)
-    REFERENCES `users` (`id`)
-    ON DELETE SET NULL
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_borrow_requests_returned_by`
-    FOREIGN KEY (`returned_by`)
-    REFERENCES `users` (`id`)
-    ON DELETE SET NULL
-    ON UPDATE NO ACTION
+
+
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- -----------------------------------------------------
 -- Table `borrowed_items`
 -- -----------------------------------------------------
-CREATE TABLE `borrowed_items` (
+CREATE TABLE `borrow_items` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `borrow_request_id` INT NOT NULL,
   `item_id` INT NOT NULL,
@@ -360,21 +167,9 @@ CREATE TABLE `borrowed_items` (
   `condition_after` ENUM('new', 'excellent', 'good', 'fair', 'poor', 'damaged') NULL,
   `status` ENUM('pending', 'checked_out', 'returned') NOT NULL DEFAULT 'pending',
   `is_returned` TINYINT(1) NOT NULL DEFAULT 0,
-  `return_notes` TEXT NULL,
+ 
   `returned_at` DATETIME NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_borrowed_items_borrow_request_id_idx` (`borrow_request_id` ASC),
-  INDEX `fk_borrowed_items_item_id_idx` (`item_id` ASC),
-  CONSTRAINT `fk_borrowed_items_borrow_request_id`
-    FOREIGN KEY (`borrow_request_id`)
-    REFERENCES `borrow_requests` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_borrowed_items_item_id`
-    FOREIGN KEY (`item_id`)
-    REFERENCES `items` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION
+ 
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- -----------------------------------------------------
@@ -415,22 +210,9 @@ CREATE TABLE `reservations` (
   `end_date` DATE NOT NULL,
   `purpose` VARCHAR(255) NULL,
   `status` ENUM('pending', 'confirmed', 'cancelled', 'completed') NOT NULL DEFAULT 'pending',
-  `notes` TEXT NULL,
   `created_at` DATETIME NOT NULL,
   `updated_at` DATETIME NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_reservations_user_id_idx` (`user_id` ASC),
-  INDEX `fk_reservations_item_id_idx` (`item_id` ASC),
-  CONSTRAINT `fk_reservations_user_id`
-    FOREIGN KEY (`user_id`)
-    REFERENCES `users` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_reservations_item_id`
-    FOREIGN KEY (`item_id`)
-    REFERENCES `items` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION
+
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- -----------------------------------------------------
@@ -574,98 +356,10 @@ CREATE TABLE `inventory_transactions` (
     ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- -----------------------------------------------------
--- Table `notifications`
--- -----------------------------------------------------
-CREATE TABLE `notifications` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `user_id` INT NOT NULL,
-  `title` VARCHAR(255) NOT NULL,
-  `message` TEXT NOT NULL,
-  `type` VARCHAR(50) NOT NULL,
-  `related_record_type` VARCHAR(50) NULL,
-  `related_record_id` INT NULL,
-  `is_read` TINYINT(1) NOT NULL DEFAULT 0,
-  `created_at` DATETIME NOT NULL,
-  `read_at` DATETIME NULL,
-  PRIMARY KEY (`id`),
-  INDEX `fk_notifications_user_id_idx` (`user_id` ASC),
-  CONSTRAINT `fk_notifications_user_id`
-    FOREIGN KEY (`user_id`)
-    REFERENCES `users` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- -----------------------------------------------------
--- Table `permissions`
--- -----------------------------------------------------
-CREATE TABLE `permissions` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `name` VARCHAR(100) NOT NULL,
-  `description` TEXT NULL,
-  `category` VARCHAR(50) NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE INDEX `name_UNIQUE` (`name` ASC)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- -----------------------------------------------------
--- Table `role_permissions`
--- -----------------------------------------------------
-CREATE TABLE `role_permissions` (
-  `role` ENUM('admin', 'manager', 'user') NOT NULL,
-  `permission_id` INT NOT NULL,
-  PRIMARY KEY (`role`, `permission_id`),
-  INDEX `fk_role_permissions_permission_id_idx` (`permission_id` ASC),
-  CONSTRAINT `fk_role_permissions_permission_id`
-    FOREIGN KEY (`permission_id`)
-    REFERENCES `permissions` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- -----------------------------------------------------
--- Table `user_permissions`
--- -----------------------------------------------------
-CREATE TABLE `user_permissions` (
-  `user_id` INT NOT NULL,
-  `permission_id` INT NOT NULL,
-  `granted` TINYINT(1) NOT NULL DEFAULT 1,
-  PRIMARY KEY (`user_id`, `permission_id`),
-  INDEX `fk_user_permissions_permission_id_idx` (`permission_id` ASC),
-  CONSTRAINT `fk_user_permissions_user_id`
-    FOREIGN KEY (`user_id`)
-    REFERENCES `users` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_user_permissions_permission_id`
-    FOREIGN KEY (`permission_id`)
-    REFERENCES `permissions` (`id`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- -----------------------------------------------------
--- Table `activity_logs`
--- -----------------------------------------------------
-CREATE TABLE `activity_logs` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `user_id` INT NULL,
-  `action` VARCHAR(100) NOT NULL,
-  `entity_type` VARCHAR(50) NULL,
-  `entity_id` INT NULL,
-  `description` TEXT NULL,
-  `ip_address` VARCHAR(50) NULL,
-  `user_agent` TEXT NULL,
-  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`),
-  INDEX `fk_activity_logs_user_id_idx` (`user_id` ASC),
-  CONSTRAINT `fk_activity_logs_user_id`
-    FOREIGN KEY (`user_id`)
-    REFERENCES `users` (`id`)
-    ON DELETE SET NULL
-    ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- -----------------------------------------------------
 -- Table `settings`

@@ -1,5 +1,10 @@
 <?php
 class UtilityHelper {
+
+// helpers/UtilityHelper.php
+
+
+
     /**
      * Format date in the specified format
      */
@@ -176,23 +181,7 @@ class UtilityHelper {
      * Log activity
      */
     public static function logActivity($userId, $action, $entityType = null, $entityId = null, $description = null) {
-        $conn = getDbConnection();
         
-        $sql = "INSERT INTO activity_logs (user_id, action, entity_type, entity_id, description, ip_address, user_agent) 
-                VALUES (?, ?, ?, ?, ?, ?, ?)";
-        
-        $stmt = $conn->prepare($sql);
-        $stmt->execute([
-            $userId,
-            $action,
-            $entityType,
-            $entityId,
-            $description,
-            $_SERVER['REMOTE_ADDR'] ?? null,
-            $_SERVER['HTTP_USER_AGENT'] ?? null
-        ]);
-        
-        return $conn->lastInsertId();
     }
     
     /**

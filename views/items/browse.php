@@ -31,7 +31,6 @@ $categories = InventoryHelper::getAllCategories();
 
 // Get locations for filter
 $locationResult = LocationHelper::getAllLocations(1, 100, ['is_active' => 1]);
-$locations = $locationResult['locations'];
 
 // Include header
 include 'includes/header.php';
@@ -132,97 +131,105 @@ include 'includes/header.php';
     <!-- Items Grid -->
     <div class="items-grid">
         <?php foreach ($items as $item): ?>
-            <div class="item-card">
-                <div class="item-card-image">
-                    <?php if (!empty($item['images']) && count($item['images']) > 0): ?>
-                        <img src="<?php echo BASE_URL . '/uploads/items/' . $item['id'] . '/' . $item['images'][0]['file_name']; ?>" alt="<?php echo htmlspecialchars($item['name']); ?>">
-                    <?php else: ?>
-                        <?php 
-                        // Determine icon based on category
-                        $iconClass = 'box';
-                        
-                        if (stripos($item['category_name'], 'computer') !== false || stripos($item['name'], 'laptop') !== false) {
-                            $iconClass = 'laptop';
-                        } elseif (stripos($item['category_name'], 'audio') !== false) {
-                            $iconClass = 'headphones';
-                        } elseif (stripos($item['category_name'], 'video') !== false || stripos($item['name'], 'projector') !== false) {
-                            $iconClass = 'video';
-                        } elseif (stripos($item['category_name'], 'camera') !== false || stripos($item['category_name'], 'photo') !== false) {
-                            $iconClass = 'camera';
-                        } elseif (stripos($item['name'], 'tablet') !== false || stripos($item['name'], 'ipad') !== false) {
-                            $iconClass = 'tablet-alt';
-                        } elseif (stripos($item['name'], 'microphone') !== false || stripos($item['name'], 'mic') !== false) {
-                            $iconClass = 'microphone';
-                        }
-                        ?>
-                        <i class="fas fa-<?php echo $iconClass; ?>"></i>
+        <div class="item-card">
+            <div class="item-card-image">
+                <?php if (!empty($item['images']) && count($item['images']) > 0): ?>
+                    <img src="<?php echo BASE_URL . '/uploads/items/' . $item['id'] . '/' . $item['images'][0]['file_name']; ?>" alt="<?php echo htmlspecialchars($item['name'] ?? 'Item'); ?>">
+                <?php else: ?>
+                    <?php
+                    // Determine icon based on category or item name
+                    $iconClass = 'box';
+
+                    if (stripos($item['category_name'], 'computer') !== false || stripos($item['name'], 'laptop') !== false) {
+                        $iconClass = 'laptop';
+                    } elseif (stripos($item['category_name'], 'audio') !== false) {
+                        $iconClass = 'headphones';
+                    } elseif (stripos($item['category_name'], 'video') !== false || stripos($item['name'], 'projector') !== false) {
+                        $iconClass = 'video';
+                    } elseif (stripos($item['category_name'], 'camera') !== false || stripos($item['category_name'], 'photo') !== false) {
+                        $iconClass = 'camera';
+                    } elseif (stripos($item['name'], 'tablet') !== false || stripos($item['name'], 'ipad') !== false) {
+                        $iconClass = 'tablet-alt';
+                    } elseif (stripos($item['name'], 'microphone') !== false || stripos($item['name'], 'mic') !== false) {
+                        $iconClass = 'microphone';
+                    }
+                    ?>
+                    <i class="fas fa-<?php echo $iconClass; ?>" aria-hidden="true"></i>
+                <?php endif; ?>
+            </div>
+
+            <div class="item-card-body">
+                <div class="item-card-tags">
+                    <span class="badge badge-blue"><?php echo htmlspecialchars($item['category_name'] ?? 'Uncategorized'); ?></span>
+                    <?php if (!empty($item['tags'])): ?>
+                        <?php foreach (array_slice($item['tags'], 0, 2) as $tag): ?>
+                            <span class="badge badge-purple"><?php echo htmlspecialchars($tag['name']); ?></span>
+                        <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
-                <div class="item-card-body">
-                    <div class="item-card-tags">
-                        <span class="badge badge-blue"><?php echo htmlspecialchars($item['category_name'] ?? 'Uncategorized'); ?></span>
-                        <?php if (!empty($item['tags'])): ?>
-                            <?php foreach (array_slice($item['tags'], 0, 2) as $tag): ?>
-                                <span class="badge badge-purple"><?php echo htmlspecialchars($tag['name']); ?></span>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </div>
-                    <h3 class="item-card-title"><?php echo htmlspecialchars($item['name']); ?></h3>
-                    <div class="item-card-details">
-                        <?php if (!empty($item['brand'])): ?>
+
+                <h3 class="item-card-title"><?php echo htmlspecialchars($item['name'] ?? 'Unnamed Item'); ?></h3>
+
+                <div class="item-card-details">
+                    <?php if (!empty($item['brand'])): ?>
                         <div class="item-detail">
                             <span class="item-detail-label">Brand:</span>
                             <span class="item-detail-value"><?php echo htmlspecialchars($item['brand']); ?></span>
                         </div>
-                        <?php endif; ?>
-                        <?php if (!empty($item['model'])): ?>
+                    <?php endif; ?>
+
+                    <?php if (!empty($item['model'])): ?>
                         <div class="item-detail">
                             <span class="item-detail-label">Model:</span>
                             <span class="item-detail-value"><?php echo htmlspecialchars($item['model']); ?></span>
                         </div>
-                        <?php endif; ?>
-                        <div class="item-detail">
-                            <span class="item-detail-label">Location:</span>
-                            <span class="item-detail-value"><?php echo htmlspecialchars($item['location_name'] ?? 'Not Set'); ?></span>
-                        </div>
+                    <?php endif; ?>
+
+                    <div class="item-detail">
+                        <span class="item-detail-label">Location:</span>
+                        <span class="item-detail-value"><?php echo htmlspecialchars($item['location_name'] ?? 'Not Set'); ?></span>
                     </div>
-                    <div class="item-card-footer">
-                        <div class="item-status">
-                            <?php 
-                            $statusClass = 'status-available';
-                            $statusText = 'Available';
-                            
-                            if ($item['status'] === 'borrowed') {
-                                $statusClass = 'status-borrowed';
-                                $statusText = 'Borrowed';
-                            } elseif ($item['status'] === 'reserved') {
-                                $statusClass = 'status-reserved';
-                                $statusText = 'Reserved';
-                            } elseif ($item['status'] === 'maintenance') {
-                                $statusClass = 'status-maintenance';
-                                $statusText = 'In Maintenance';
-                            } elseif ($item['status'] === 'retired' || $item['status'] === 'unavailable') {
-                                $statusClass = 'status-unavailable';
-                                $statusText = 'Unavailable';
-                            }
-                            ?>
-                            <span class="status-indicator <?php echo $statusClass; ?>"></span>
-                            <span><?php echo $statusText; ?></span>
-                        </div>
-                        <div class="item-actions">
-                            <button class="btn btn-sm btn-outline item-quick-view" data-item-id="<?php echo $item['id']; ?>">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <?php if ($item['status'] === 'available'): ?>
-                                <button class="btn btn-sm btn-primary item-request" data-item-id="<?php echo $item['id']; ?>" data-item-name="<?php echo htmlspecialchars($item['name']); ?>">Request</button>
-                            <?php elseif ($item['status'] === 'reserved'): ?>
-                                <button class="btn btn-sm btn-outline item-reserve" data-item-id="<?php echo $item['id']; ?>" data-item-name="<?php echo htmlspecialchars($item['name']); ?>">Reserve</button>
-                            <?php endif; ?>
-                        </div>
+                </div>
+
+                <div class="item-card-footer">
+                    <div class="item-status">
+                        <?php
+                        $statusClass = 'status-available';
+                        $statusText = 'Available';
+
+                        if ($item['status'] === 'borrowed') {
+                            $statusClass = 'status-borrowed';
+                            $statusText = 'Borrowed';
+                        } elseif ($item['status'] === 'reserved') {
+                            $statusClass = 'status-reserved';
+                            $statusText = 'Reserved';
+                        } elseif ($item['status'] === 'maintenance') {
+                            $statusClass = 'status-maintenance';
+                            $statusText = 'In Maintenance';
+                        } elseif (in_array($item['status'], ['retired', 'unavailable'])) {
+                            $statusClass = 'status-unavailable';
+                            $statusText = 'Unavailable';
+                        }
+                        ?>
+                        <span class="status-indicator <?php echo $statusClass; ?>"></span>
+                        <span><?php echo $statusText; ?></span>
+                    </div>
+
+                    <div class="item-actions">
+                        <button class="btn btn-sm btn-outline item-quick-view" data-item-id="<?php echo $item['id']; ?>">
+                            <i class="fas fa-eye"></i>
+                        </button>
+
+                        <?php if ($item['status'] === 'available'): ?>
+                            <a href="<?php echo BASE_URL; ?>/views/borrow/requestto.php?id=<?php echo $item['id']; ?>" class="btn btn-sm btn-primary">Request</a>
+                        <?php elseif ($item['status'] === 'reserved'): ?>
+                            <a href="<?php echo BASE_URL; ?>/views/borrow/reserve?id=<?php echo $item['id']; ?>" class="btn btn-sm btn-outline">Reserve</a>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
-        <?php endforeach; ?>
+        </div>
+    <?php endforeach; ?>
     </div>
 
     <!-- Pagination -->
@@ -297,83 +304,6 @@ include 'includes/header.php';
                 <div class="spinner"></div>
                 <p>Loading item details...</p>
             </div>
-        </div>
-    </div>
-</div>
-
-<!-- Borrow Request Modal Template (Initially Hidden) -->
-<div class="modal-backdrop" id="borrow-request-modal" style="display: none;">
-    <div class="modal" style="max-width: 600px;">
-        <div class="modal-header">
-            <div class="modal-title">New Borrow Request</div>
-            <button class="modal-close">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="modal-body">
-            <form id="borrow-request-form" method="POST" action="<?php echo BASE_URL; ?>/borrow/create">
-                <input type="hidden" name="<?php echo CSRF_TOKEN_NAME; ?>" value="<?php echo $_SESSION[CSRF_TOKEN_NAME]; ?>">
-                <input type="hidden" name="item_id" id="request-item-id" value="">
-                
-                <div class="form-group">
-                    <label class="form-label">Item</label>
-                    <div class="selected-item" id="selected-item-display">
-                        <strong id="selected-item-name"></strong>
-                    </div>
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-col">
-                        <div class="form-group">
-                            <label class="form-label" for="borrow_date">Borrow Date</label>
-                            <input type="date" class="form-control" id="borrow_date" name="borrow_date" required min="<?php echo date('Y-m-d'); ?>">
-                        </div>
-                    </div>
-                    <div class="form-col">
-                        <div class="form-group">
-                            <label class="form-label" for="return_date">Return Date</label>
-                            <input type="date" class="form-control" id="return_date" name="return_date" required min="<?php echo date('Y-m-d', strtotime('+1 day')); ?>">
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="purpose">Purpose</label>
-                    <select class="form-control" id="purpose" name="purpose" required>
-                        <option value="">Select purpose...</option>
-                        <option value="Project Work">Project Work</option>
-                        <option value="Event">Event</option>
-                        <option value="Presentation">Presentation</option>
-                        <option value="Training">Training</option>
-                        <option value="Remote Work">Remote Work</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-                
-                <div class="form-group" id="project-name-group" style="display: none;">
-                    <label class="form-label" for="project_name">Project/Event Name</label>
-                    <input type="text" class="form-control" id="project_name" name="project_name" placeholder="Enter project or event name">
-                </div>
-                
-                <div class="form-group">
-                    <label class="form-label" for="notes">Additional Notes</label>
-                    <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Add any special requirements or details..."></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <div class="form-check">
-                        <input type="checkbox" id="terms" name="terms" class="form-check-input" required>
-                        <label for="terms" class="form-check-label">I agree to handle this equipment responsibly and return it in the same condition</label>
-                    </div>
-                </div>
-                
-                <div class="form-action">
-                    <button type="button" class="btn btn-outline" id="cancel-request-btn">Cancel</button>
-                    <button type="submit" class="btn btn-primary" id="submit-request-btn">
-                        <i class="fas fa-paper-plane btn-icon"></i> Submit Request
-                    </button>
-                </div>
-            </form>
         </div>
     </div>
 </div>
@@ -521,85 +451,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.key === 'Escape' && itemDetailModal.style.display === 'flex') {
             itemDetailModal.style.display = 'none';
             document.body.style.overflow = ''; // Restore scrolling
-        }
-    });
-    
-    // Request item functionality
-    const requestBtns = document.querySelectorAll('.item-request');
-    const borrowRequestModal = document.getElementById('borrow-request-modal');
-    const borrowModalClose = borrowRequestModal.querySelector('.modal-close');
-    const cancelRequestBtn = document.getElementById('cancel-request-btn');
-    const requestItemId = document.getElementById('request-item-id');
-    const selectedItemName = document.getElementById('selected-item-name');
-    
-    requestBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const itemId = this.getAttribute('data-item-id');
-            const itemName = this.getAttribute('data-item-name');
-            
-            // Set values in form
-            requestItemId.value = itemId;
-            selectedItemName.textContent = itemName;
-            
-            // Set default dates (today and 7 days from now)
-            const today = new Date();
-            const returnDate = new Date();
-            returnDate.setDate(today.getDate() + 7);
-            
-            document.getElementById('borrow_date').value = today.toISOString().split('T')[0];
-            document.getElementById('return_date').value = returnDate.toISOString().split('T')[0];
-            
-            // Show modal
-            borrowRequestModal.style.display = 'flex';
-            document.body.style.overflow = 'hidden'; // Prevent scrolling
-        });
-    });
-    
-    // Close borrow request modal
-    borrowModalClose.addEventListener('click', function() {
-        borrowRequestModal.style.display = 'none';
-        document.body.style.overflow = ''; // Restore scrolling
-    });
-    
-    cancelRequestBtn.addEventListener('click', function() {
-        borrowRequestModal.style.display = 'none';
-        document.body.style.overflow = ''; // Restore scrolling
-    });
-    
-    borrowRequestModal.addEventListener('click', function(e) {
-        if (e.target === this) {
-            this.style.display = 'none';
-            document.body.style.overflow = ''; // Restore scrolling
-        }
-    });
-    
-    // Show/hide project name field based on purpose selection
-    const purposeSelect = document.getElementById('purpose');
-    const projectNameGroup = document.getElementById('project-name-group');
-    
-    purposeSelect.addEventListener('change', function() {
-        const selectedPurpose = this.value;
-        
-        if (selectedPurpose === 'Project Work' || selectedPurpose === 'Event') {
-            projectNameGroup.style.display = 'block';
-            document.getElementById('project_name').setAttribute('required', 'required');
-        } else {
-            projectNameGroup.style.display = 'none';
-            document.getElementById('project_name').removeAttribute('required');
-        }
-    });
-    
-    // Date validation
-    const borrowDateInput = document.getElementById('borrow_date');
-    const returnDateInput = document.getElementById('return_date');
-    
-    borrowDateInput.addEventListener('change', function() {
-        // Set min return date to borrow date
-        returnDateInput.min = this.value;
-        
-        // If return date is before new borrow date, update it
-        if (returnDateInput.value < this.value) {
-            returnDateInput.value = this.value;
         }
     });
     
