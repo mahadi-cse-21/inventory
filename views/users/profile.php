@@ -260,11 +260,9 @@ include 'includes/header.php';
                                             <div>
                                                 <div style="font-weight: 500;"><?php echo htmlspecialchars($item['name']); ?></div>
                                                 <div style="font-size: 0.8rem; color: var(--gray-500);">
-                                                    <?php if (!empty($item['brand']) || !empty($item['model'])): ?>
-                                                        <?php echo htmlspecialchars($item['brand'] . ' ' . $item['model']); ?>
-                                                    <?php else: ?>
-                                                        Asset #<?php echo htmlspecialchars($item['asset_id']); ?>
-                                                    <?php endif; ?>
+                                                   
+                                                        Asset #<?php echo htmlspecialchars($item['id']); ?>
+                                                    
                                                 </div>
                                             </div>
                                         </div>
@@ -272,7 +270,7 @@ include 'includes/header.php';
                                     <td>
                                         <?php
                                         // Get category name
-                                        $categorySql = "SELECT c.name FROM items i JOIN categories c ON i.category_id = c.id WHERE i.id = ?";
+                                        $categorySql = "SELECT c.name FROM item i JOIN category c ON i.cat_id = c.id WHERE i.id = ?";
                                         $categoryStmt = $conn->prepare($categorySql);
                                         $categoryStmt->execute([$item['id']]);
                                         $categoryName = $categoryStmt->fetchColumn() ?: 'Uncategorized';
@@ -282,7 +280,7 @@ include 'includes/header.php';
                                     <td><?php echo (int)$item['borrow_count']; ?></td>
                                     <td><?php echo UtilityHelper::formatDateForDisplay($item['last_borrowed'], 'short'); ?></td>
                                     <td>
-                                        <a href="<?php echo BASE_URL; ?>/borrow/create?item=<?php echo $item['id']; ?>" class="btn btn-sm btn-outline">Request Again</a>
+                                        <a href="<?php echo BASE_URL; ?>/borrow/requestto?id=<?php echo $item['id']; ?>" class="btn btn-sm btn-outline">Request Again</a>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

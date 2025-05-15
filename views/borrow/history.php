@@ -33,7 +33,7 @@ $filters = [
 // Get user's borrow requests with pagination
 $requestsData = BorrowHelper::getAllBorrowRequests($page, ITEMS_PER_PAGE, $filters);
 $requests = $requestsData['requests'];
-$pagination = $requestsData['pagination'];
+
 
 // Include header
 include 'includes/header.php';
@@ -48,11 +48,7 @@ include 'includes/header.php';
                 <span class="breadcrumb-item">Borrow History</span>
             </nav>
         </div>
-        <div>
-            <a href="<?php echo BASE_URL; ?>/borrow/create" class="btn btn-primary">
-                <i class="fas fa-plus-circle btn-icon"></i> New Request
-            </a>
-        </div>
+     
     </div>
 </div>
 
@@ -106,11 +102,12 @@ include 'includes/header.php';
 <?php if (count($requests) > 0): ?>
     <div class="panel">
         <div class="panel-body">
-            <div class="table-responsive">
+            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
                 <table class="table">
                     <thead>
                         <tr>
                             <th>Request ID</th>
+                            <th>Requester ID</th>
                             <th>Item</th>
                             <th>Request Date</th>
                             <th>Status</th>
@@ -120,21 +117,14 @@ include 'includes/header.php';
                     <tbody>
                         <?php foreach ($requests as $request): ?>
                             <tr>
-                                <td>
-                                    <span style="font-weight: 500; color: var(--primary);"><?php echo htmlspecialchars($request['id']); ?></span>
-                                </td>
+                                <td><span style="font-weight: 500; color: var(--primary);"><?php echo htmlspecialchars($request['id']); ?></span></td>
+                                <td><span style="font-weight: 500; color: var(--primary);"><?php echo htmlspecialchars($request['user_id']); ?></span></td>
                                 <td><?php echo $request['item']; ?></td>
-                                <td>
-                                    <?php echo UtilityHelper::formatDateForDisplay($request['request_date'], 'short'); ?>
-                                </td>
+                                <td><?php echo UtilityHelper::formatDateForDisplay($request['request_date'], 'short'); ?></td>
                                 <td>
                                     <?php
                                     $badgeClass = 'badge-blue';
-
                                     switch ($request['status']) {
-                                        case 'pending':
-                                            $badgeClass = 'badge-blue';
-                                            break;
                                         case 'approved':
                                             $badgeClass = 'badge-green';
                                             break;
@@ -144,6 +134,9 @@ include 'includes/header.php';
                                         case 'cancelled':
                                             $badgeClass = 'badge-gray';
                                             break;
+                                        case 'completed':
+                                            $badgeClass = 'badge-dark';
+                                            break;
                                     }
                                     ?>
                                     <span class="badge <?php echo $badgeClass; ?>">
@@ -152,100 +145,57 @@ include 'includes/header.php';
                                 </td>
                                 <td>
                                     <?php if ($request['status'] === 'pending' && $currentUser['role'] !== 'student'): ?>
-    <!-- Approve button -->
-    <a href="<?php echo BASE_URL; ?>/borrow/approve?id=<?php echo $request['id']; ?>"
-        class="btn btn-sm btn-success"
-        onclick="return confirm('Are you sure you want to approve this request?');">
-        <i class="fas fa-check"></i>
-    </a>
-
-    <!-- Cancel button -->
-    <a href="<?php echo BASE_URL; ?>/borrow/cancel?id=<?php echo $request['id']; ?>"
-        class="btn btn-sm btn-danger"
-        onclick="return confirm('Are you sure you want to cancel this request?');">
-        <i class="fas fa-times"></i>
-    </a>
-
-<?php elseif ($request['status'] === 'approved'): ?>
-    <!-- Approved status icon or message -->
-    <button class="btn btn-sm btn-secondary" disabled>
-        <i class="fas fa-check-circle"></i> Approved
-    </button>
-
-<?php else: ?>
-    <!-- Disabled buttons for students or other statuses -->
-    <button class="btn btn-sm btn-success" disabled>
-        <i class="fas fa-check"></i>
-    </button>
-    <button class="btn btn-sm btn-danger" disabled>
-        <i class="fas fa-times"></i>
-    </button>
-<?php endif; ?>
-
-
+                                        <a href="<?php echo BASE_URL; ?>/borrow/approve?id=<?php echo $request['id']; ?>" class="btn btn-sm btn-success" onclick="return confirm('Are you sure you want to approve this request?');">
+                                            <i class="fas fa-check"></i>
+                                        </a>
+                                        <a href="<?php echo BASE_URL; ?>/borrow/cancel?id=<?php echo $request['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to cancel this request?');">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    <?php elseif ($request['status'] === 'approved'): ?>
+                                        <?php if ($currentUser['role'] === 'admin'): ?>
+                                            <button class="btn btn-sm btn-secondary">
+                                                <i class="fas fa-flag-checkered"></i> Approved
+                                            </button>
+                                        <?php else: ?>
+                                            <button class="btn btn-sm btn-secondary" disabled>
+                                                <i class="fas fa-flag-checkered"></i> Approved
+                                            </button>
+                                        <?php endif; ?>
+                                    <?php elseif ($request['status'] === 'completed'): ?>
+                                        <?php if ($currentUser['role'] === 'admin'): ?>
+                                            <button class="btn btn-sm btn-secondary">
+                                                <i class="fas fa-check-circle"></i> Completed
+                                            </button>
+                                        <?php else: ?>
+                                            <button class="btn btn-sm btn-secondary" disabled>
+                                                <i class="fas fa-check-circle"></i> Completed
+                                            </button>
+                                        <?php endif; ?>
+                                    <?php elseif ($request['status'] === 'rejected'): ?>
+                                        <?php if ($currentUser['role'] === 'admin'): ?>
+                                            <button class="btn btn-sm btn-danger">
+                                                <i class="fas fa-times-circle"></i> Rejected
+                                            </button>
+                                        <?php else: ?>
+                                            <button class="btn btn-sm btn-danger" disabled>
+                                                <i class="fas fa-times-circle"></i> Rejected
+                                            </button>
+                                        <?php endif; ?>
+                                    <?php else: ?>
+                                        <button class="btn btn-sm btn-success" disabled>
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-danger" disabled>
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    <?php endif; ?>
                                 </td>
-
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
                 </table>
             </div>
         </div>
-
-        <!-- Pagination -->
-        <?php if ($pagination['totalPages'] > 1): ?>
-            <div class="panel-footer">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div class="pagination-info">
-                        Showing <?php echo $pagination['totalItems'] > 0 ? ($pagination['offset'] + 1) : 0; ?>-<?php echo min($pagination['offset'] + $pagination['itemsPerPage'], $pagination['totalItems']); ?> of <?php echo $pagination['totalItems']; ?> requests
-                    </div>
-                    <div class="pagination">
-                        <?php if ($pagination['currentPage'] > 1): ?>
-                            <a href="<?php echo BASE_URL; ?>/borrow/history?page=<?php echo ($pagination['currentPage'] - 1); ?>&status=<?php echo $filters['status']; ?>&date_from=<?php echo $filters['date_from']; ?>&date_to=<?php echo $filters['date_to']; ?>&search=<?php echo urlencode($filters['search']); ?>" class="btn btn-sm btn-outline">Previous</a>
-                        <?php else: ?>
-                            <button class="btn btn-sm btn-outline" disabled>Previous</button>
-                        <?php endif; ?>
-
-                        <?php
-                        // Calculate page range to display
-                        $startPage = max(1, $pagination['currentPage'] - 2);
-                        $endPage = min($pagination['totalPages'], $pagination['currentPage'] + 2);
-
-                        // Always show first page
-                        if ($startPage > 1) {
-                            echo '<a href="' . BASE_URL . '/borrow/history?page=1&status=' . $filters['status'] . '&date_from=' . $filters['date_from'] . '&date_to=' . $filters['date_to'] . '&search=' . urlencode($filters['search']) . '" class="btn btn-sm btn-outline">1</a>';
-                            if ($startPage > 2) {
-                                echo '<span style="margin: 0 0.5rem;">...</span>';
-                            }
-                        }
-
-                        // Display page numbers
-                        for ($i = $startPage; $i <= $endPage; $i++) {
-                            if ($i == $pagination['currentPage']) {
-                                echo '<button class="btn btn-sm btn-primary">' . $i . '</button>';
-                            } else {
-                                echo '<a href="' . BASE_URL . '/borrow/history?page=' . $i . '&status=' . $filters['status'] . '&date_from=' . $filters['date_from'] . '&date_to=' . $filters['date_to'] . '&search=' . urlencode($filters['search']) . '" class="btn btn-sm btn-outline">' . $i . '</a>';
-                            }
-                        }
-
-                        // Always show last page
-                        if ($endPage < $pagination['totalPages']) {
-                            if ($endPage < $pagination['totalPages'] - 1) {
-                                echo '<span style="margin: 0 0.5rem;">...</span>';
-                            }
-                            echo '<a href="' . BASE_URL . '/borrow/history?page=' . $pagination['totalPages'] . '&status=' . $filters['status'] . '&date_from=' . $filters['date_from'] . '&date_to=' . $filters['date_to'] . '&search=' . urlencode($filters['search']) . '" class="btn btn-sm btn-outline">' . $pagination['totalPages'] . '</a>';
-                        }
-                        ?>
-
-                        <?php if ($pagination['currentPage'] < $pagination['totalPages']): ?>
-                            <a href="<?php echo BASE_URL; ?>/borrow/history?page=<?php echo ($pagination['currentPage'] + 1); ?>&status=<?php echo $filters['status']; ?>&date_from=<?php echo $filters['date_from']; ?>&date_to=<?php echo $filters['date_to']; ?>&search=<?php echo urlencode($filters['search']); ?>" class="btn btn-sm btn-outline">Next</a>
-                        <?php else: ?>
-                            <button class="btn btn-sm btn-outline" disabled>Next</button>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-        <?php endif; ?>
     </div>
 <?php else: ?>
     <div class="empty-state">
@@ -260,6 +210,7 @@ include 'includes/header.php';
     </div>
 <?php endif; ?>
 
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Auto-submit form when filters change
@@ -272,6 +223,11 @@ include 'includes/header.php';
 </script>
 
 <style>
+    .table-responsive {
+    max-height: 400px; /* Set a fixed height, adjust this value as needed */
+    overflow-y: auto;  /* Enable vertical scrolling */
+}
+
     .empty-state {
         text-align: center;
         padding: 4rem 2rem;

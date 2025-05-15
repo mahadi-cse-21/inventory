@@ -51,7 +51,7 @@ if (hasRole('admin')) {
 }
 
 // Fetch the count result
-$pendingCount = $pendingStmt->fetchColumn();
+
 $pendingCount = (int)$pendingStmt->fetchColumn();
 
 // Count past borrows in the last 90 days
@@ -505,7 +505,22 @@ include 'includes/header.php';
 
                                 <td data-label="Actions">
                                     <?php if ($borrow['status'] !== 'returned'): ?>
-                                        <a href="<?php echo BASE_URL; ?>/borrow/return?id=<?php echo $borrow['id']; ?>" class="btn btn-sm btn-outline">Return</a>
+                                        <?php if ($currentUser['role'] !== 'student'): ?>
+                                            <!-- Active Return button for non-students -->
+                                            <a href="<?php echo BASE_URL; ?>/borrow/return?id=<?php echo $borrow['id']; ?>"
+                                                class="btn btn-sm btn-outline">
+                                                Return
+                                            </a>
+                                        <?php else: ?>
+                                            <!-- Disabled Return button for students -->
+                                            <a href="javascript:void(0);"
+                                                class="btn btn-sm btn-outline disabled"
+                                                style="pointer-events: none; opacity: 0.6; cursor: not-allowed;"
+                                                title="Students cannot return items">
+                                                Return
+                                            </a>
+                                        <?php endif; ?>
+
                                     <?php endif; ?>
                                 </td>
 
@@ -556,7 +571,7 @@ include 'includes/header.php';
                                 <!-- Actions Column -->
                                 <td data-label="Actions">
                                     <?php if ($request['status'] === 'pending'): ?>
-                                        <?php if ($currentUser['role']=='admin'): ?>
+                                        <?php if ($currentUser['role'] == 'admin'): ?>
                                             <!-- Active buttons for non-students -->
                                             <a href="<?php echo BASE_URL; ?>/borrow/approve?id=<?php echo $request['id']; ?>"
                                                 class="btn btn-sm btn-success"

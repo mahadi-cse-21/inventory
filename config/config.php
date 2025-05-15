@@ -17,7 +17,7 @@ define('ALLOWED_IMAGE_TYPES', ['image/jpeg', 'image/png', 'image/gif']);
 define('UPLOAD_DIR', __DIR__ . '/../uploads');
 
 // Pagination settings
-define('ITEMS_PER_PAGE', 20);
+define('ITEMS_PER_PAGE', 5);
 
 // Error reporting
 error_reporting(E_ALL);

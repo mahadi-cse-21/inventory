@@ -44,11 +44,7 @@ include 'includes/header.php';
                 <span class="breadcrumb-item">My Borrowed Items</span>
             </nav>
         </div>
-        <div>
-            <a href="<?php echo BASE_URL; ?>/borrow/create" class="btn btn-primary">
-                <i class="fas fa-plus-circle btn-icon"></i> New Request
-            </a>
-        </div>
+
     </div>
 </div>
 <?php if (empty($borrowedItems)): ?>
@@ -152,9 +148,16 @@ include 'includes/header.php';
                                 <td>
                                     <?php if (strtolower(trim($item['status'])) !== 'returned'): ?>
                                         <?php if ($currentUser['role'] !== 'student'): ?>
-                                            <!-- Active Return button for non-students -->
+                                            <!-- Active Return button for non-students (admins, etc.) -->
                                             <a href="<?php echo BASE_URL; ?>/borrow/return?id=<?php echo urlencode($item['id']); ?>"
                                                 style="margin-left: auto; padding: 6px 12px; font-size: 0.85rem; background-color: #007bff; color: white; border: none; border-radius: 4px; text-decoration: none;">
+                                                Return
+                                            </a>
+                                        <?php elseif ($currentUser['role'] === 'admin'): ?>
+                                            <!-- Disabled Return button for admins (or show specific message if needed) -->
+                                            <a href="javascript:void(0);"
+                                                style="margin-left: auto; padding: 6px 12px; font-size: 0.85rem; background-color: #aaa; color: white; border: none; border-radius: 4px; text-decoration: none; cursor: not-allowed;"
+                                                title="Admins cannot return items directly">
                                                 Return
                                             </a>
                                         <?php else: ?>
@@ -165,10 +168,10 @@ include 'includes/header.php';
                                                 Return
                                             </a>
                                         <?php endif; ?>
-
                                     <?php else: ?>
                                         <button class="btn btn-sm btn-outline" disabled>Returned</button>
                                     <?php endif; ?>
+
                                 </td>
 
 
