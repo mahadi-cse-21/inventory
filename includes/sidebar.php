@@ -51,7 +51,7 @@
             </a>
         </div> -->
 
-        <?php if (hasRole(['admin', 'manager'])): ?>
+        <?php if (hasRole(['admin'])): ?>
         <div class="nav-section">
             <div class="nav-section-title">Management</div>
             <a href="<?php echo BASE_URL; ?>/items" class="nav-item <?php echo (strpos($_SERVER['REQUEST_URI'], '/items') !== false && strpos($_SERVER['REQUEST_URI'], '/items/browse') === false) ? 'active' : ''; ?>">

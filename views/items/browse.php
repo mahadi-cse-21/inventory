@@ -36,6 +36,8 @@ $locationResult = LocationHelper::getAllLocations(1, 100, ['is_active' => 1]);
 include 'includes/header.php';
 ?>
 
+
+
 <div class="content-header">
     <h1 class="page-title">Browse Items</h1>
 </div>
@@ -56,16 +58,7 @@ include 'includes/header.php';
                     <label class="form-label">Category</label>
                     <select class="form-control" name="category" id="category-filter">
                         <option value="">All Categories</option>
-                        <?php foreach ($categories as $category): ?>
-                            <option value="<?php echo $category['id']; ?>" <?php echo ($filters['category_id'] == $category['id']) ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($category['name']); ?>
-                            </option>
-                            <?php foreach ($category['children'] as $child): ?>
-                                <option value="<?php echo $child['id']; ?>" <?php echo ($filters['category_id'] == $child['id']) ? 'selected' : ''; ?>>
-                                    &nbsp;&nbsp;└ <?php echo htmlspecialchars($child['name']); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        <?php endforeach; ?>
+                        
                     </select>
                 </div>
                 <div style="flex: 1; min-width: 200px;">
@@ -170,21 +163,6 @@ include 'includes/header.php';
 
                 <h3 class="item-card-title"><?php echo htmlspecialchars($item['name'] ?? 'Unnamed Item'); ?></h3>
 
-                <div class="item-card-details">
-                    <?php if (!empty($item['brand'])): ?>
-                        <div class="item-detail">
-                            <span class="item-detail-label">Brand:</span>
-                            <span class="item-detail-value"><?php echo htmlspecialchars($item['brand']); ?></span>
-                        </div>
-                    <?php endif; ?>
-
-                    <?php if (!empty($item['model'])): ?>
-                        <div class="item-detail">
-                            <span class="item-detail-label">Model:</span>
-                            <span class="item-detail-value"><?php echo htmlspecialchars($item['model']); ?></span>
-                        </div>
-                    <?php endif; ?>
-
                     <div class="item-detail">
                         <span class="item-detail-label">Location:</span>
                         <span class="item-detail-value"><?php echo htmlspecialchars($item['location_name'] ?? 'Not Set'); ?></span>
@@ -221,7 +199,7 @@ include 'includes/header.php';
                         </button>
 
                         <?php if ($item['status'] === 'available'): ?>
-                            <a href="<?php echo BASE_URL; ?>/views/borrow/requestto.php?id=<?php echo $item['id']; ?>" class="btn btn-sm btn-primary">Request</a>
+                            <a href="<?php echo BASE_URL; ?>/borrow/requests?id=<?php echo $item['id']; ?>" class="btn btn-sm btn-primary">Request</a>
                         <?php elseif ($item['status'] === 'reserved'): ?>
                             <a href="<?php echo BASE_URL; ?>/views/borrow/reserve?id=<?php echo $item['id']; ?>" class="btn btn-sm btn-outline">Reserve</a>
                         <?php endif; ?>

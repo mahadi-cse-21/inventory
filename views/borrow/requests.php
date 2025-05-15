@@ -57,7 +57,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   $requestId = isset($_POST['request_id']) ? (int)$_POST['request_id'] : 0;
   $action = isset($_POST['action']) ? cleanInput($_POST['action']) : '';
-  $notes = isset($_POST['notes']) ? cleanInput($_POST['notes']) : '';
 
   if (!$requestId || !in_array($action, ['approve', 'reject', 'checkout', 'return'])) {
     setFlashMessage('Invalid request or action', 'danger');

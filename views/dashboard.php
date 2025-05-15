@@ -18,18 +18,40 @@ $currentUser = AuthHelper::getCurrentUser();
 $conn = getDbConnection();
 
 // Count currently borrowed items by the user
+if (hasRole('admin')) {
+    $borrowedSql = "SELECT COUNT(*) FROM borrowed_item WHERE status = 'borrowed'";
+    $borrowedStmt = $conn->prepare($borrowedSql);
+    $borrowedStmt->execute();
+} else {
+    $borrowedSql = "SELECT COUNT(*) 
+                    FROM borrowed_item 
+                    JOIN requests ON borrowed_item.request_id = requests.id 
+                    WHERE requests.user_id = ? AND borrowed_item.status = 'borrowed'";
+    $borrowedStmt = $conn->prepare($borrowedSql);
+    $borrowedStmt->execute([$currentUser['id']]);
+}
+
 $borrowedSql = "SELECT COUNT(*) FROM borrowed_item 
 where status = 'borrowed'";
 
-$borrowedStmt = $conn->prepare($borrowedSql);
-$borrowedStmt->execute();
+
 $borrowedCount = (int)$borrowedStmt->fetchColumn();
 
 // Count pending requests by the user
-$pendingSql = "SELECT COUNT(*) FROM requests 
-              WHERE  status = 'pending'";
-$pendingStmt = $conn->prepare($pendingSql);
-$pendingStmt->execute();
+if (hasRole('admin')) {
+    // Admin: count all pending requests
+    $pendingSql = "SELECT COUNT(*) FROM requests WHERE status = 'pending'";
+    $pendingStmt = $conn->prepare($pendingSql);
+    $pendingStmt->execute();
+} else {
+    // Student: count only their pending requests
+    $pendingSql = "SELECT COUNT(*) FROM requests WHERE user_id = ? AND status = 'pending'";
+    $pendingStmt = $conn->prepare($pendingSql);
+    $pendingStmt->execute([$currentUser['id']]);
+}
+
+// Fetch the count result
+$pendingCount = $pendingStmt->fetchColumn();
 $pendingCount = (int)$pendingStmt->fetchColumn();
 
 // Count past borrows in the last 90 days
@@ -431,7 +453,6 @@ include 'includes/header.php';
         <div class="dashboard-card-value"><?php echo $pendingCount; ?></div>
         <div class="dashboard-card-description">Awaiting approval</div>
     </div>
-
     <div class="dashboard-card">
         <div class="dashboard-card-header">
             <div class="dashboard-card-title">Past Borrows</div>
@@ -443,7 +464,6 @@ include 'includes/header.php';
         <div class="dashboard-card-description">In the last 90 days</div>
     </div>
 </div>
-
 <!-- Currently Borrowed Items -->
 <?php if (count($activeBorrows) > 0): ?>
     <div class="panel">
