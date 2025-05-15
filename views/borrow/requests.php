@@ -49,7 +49,7 @@ $filters = [
 // Get all borrow requests with pagination
 $requestsData = BorrowHelper::getAllBorrowRequests($page, ITEMS_PER_PAGE, $filters);
 $requests = $requestsData['requests'];
-$pagination = $requestsData['pagination'];
+
 
 // Get departments for filter dropdown
 
@@ -142,6 +142,10 @@ include 'includes/header.php';
     border-radius: 20px;
     white-space: nowrap;
   }
+ .table-responsive {
+    max-height: 400px; /* Set a fixed height, adjust this value as needed */
+    overflow-y: auto;  /* Enable vertical scrolling */
+}
 
   .badge i {
     margin-right: 0.4rem;

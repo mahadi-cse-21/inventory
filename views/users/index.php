@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Users Index View
  * 
@@ -22,17 +23,16 @@ $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $filters = [
     'search' => isset($_GET['q']) ? cleanInput($_GET['q']) : '',
     'role' => isset($_GET['role']) ? cleanInput($_GET['role']) : '',
-    'department_id' => isset($_GET['department']) ? (int)$_GET['department'] : '',
-    'is_active' => isset($_GET['status']) ? (int)$_GET['status'] : ''
 ];
 
 // Get users with pagination
-$usersResult = UserHelper::getAllUsers($page, ITEMS_PER_PAGE, $filters);
+$usersResult = UserHelper::getAllUsers($filters);
+
 $users = $usersResult['users'];
 $pagination = $usersResult['pagination'];
 
 // Get departments for filter dropdown
-$departments = UserHelper::getAllDepartments();
+
 
 // Include header
 include 'includes/header.php';
@@ -62,7 +62,7 @@ include 'includes/header.php';
             <div class="stat-card-label">Registered users</div>
         </div>
     </div>
-    
+
     <div class="stat-card">
         <div class="stat-card-header">
             <div class="stat-card-title">Admins</div>
@@ -71,7 +71,7 @@ include 'includes/header.php';
             </div>
         </div>
         <div class="stat-card-value">
-            <?php 
+            <?php
             // Count admins
             $adminCount = 0;
             foreach ($users as $user) {
@@ -79,14 +79,14 @@ include 'includes/header.php';
                     $adminCount++;
                 }
             }
-            echo $adminCount; 
+            echo $adminCount;
             ?>
         </div>
         <div class="stat-card-info">
             <div class="stat-card-label">Administrator accounts</div>
         </div>
     </div>
-    
+
     <div class="stat-card">
         <div class="stat-card-header">
             <div class="stat-card-title">Managers</div>
@@ -95,7 +95,7 @@ include 'includes/header.php';
             </div>
         </div>
         <div class="stat-card-value">
-            <?php 
+            <?php
             // Count managers
             $managerCount = 0;
             foreach ($users as $user) {
@@ -103,14 +103,14 @@ include 'includes/header.php';
                     $managerCount++;
                 }
             }
-            echo $managerCount; 
+            echo $managerCount;
             ?>
         </div>
         <div class="stat-card-info">
             <div class="stat-card-label">Manager accounts</div>
         </div>
     </div>
-    
+
     <div class="stat-card">
         <div class="stat-card-header">
             <div class="stat-card-title">Active</div>
@@ -119,15 +119,11 @@ include 'includes/header.php';
             </div>
         </div>
         <div class="stat-card-value">
-            <?php 
+            <?php
             // Count active users
             $activeCount = 0;
-            foreach ($users as $user) {
-                if ($user['is_active'] == 1) {
-                    $activeCount++;
-                }
-            }
-            echo $activeCount; 
+
+            echo $activeCount;
             ?>
         </div>
         <div class="stat-card-info">
@@ -171,25 +167,8 @@ include 'includes/header.php';
                         <option value="user" <?php echo ($filters['role'] == 'user') ? 'selected' : ''; ?>>User</option>
                     </select>
                 </div>
-                <div style="flex: 1; min-width: 200px;">
-                    <label class="form-label">Department:</label>
-                    <select class="form-control" name="department" id="department-filter">
-                        <option value="">All Departments</option>
-                        <?php foreach ($departments as $department): ?>
-                            <option value="<?php echo $department['id']; ?>" <?php echo ($filters['department_id'] == $department['id']) ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars($department['name']); ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div style="flex: 1; min-width: 200px;">
-                    <label class="form-label">Status:</label>
-                    <select class="form-control" name="status" id="status-filter">
-                        <option value="">All Statuses</option>
-                        <option value="1" <?php echo ($filters['is_active'] === 1) ? 'selected' : ''; ?>>Active</option>
-                        <option value="0" <?php echo ($filters['is_active'] === 0) ? 'selected' : ''; ?>>Inactive</option>
-                    </select>
-                </div>
+
+
                 <div style="flex: 1; min-width: 200px;">
                     <label class="form-label">Search:</label>
                     <input type="text" class="form-control" name="q" value="<?php echo htmlspecialchars($filters['search']); ?>" placeholder="Search by name, email, username...">
@@ -211,12 +190,12 @@ include 'includes/header.php';
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Name</th>
+                        <th>ID</th>
                         <th>Username</th>
                         <th>Email</th>
                         <th>Department</th>
                         <th>Role</th>
-                        <th>Status</th>
+
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -226,18 +205,16 @@ include 'includes/header.php';
                             <tr>
                                 <td>
                                     <div class="user-info">
-                                        <div class="user-avatar" data-initials="<?php echo strtoupper(substr($user['full_name'], 0, 1)); ?>"></div>
+                                        <div class="user-avatar" data-initials="<?php echo strtoupper(substr($user['name'], 0, 1)); ?>"></div>
                                         <div>
-                                            <div class="user-name"><?php echo htmlspecialchars($user['full_name']); ?></div>
-                                            <?php if (!empty($user['job_title'])): ?>
-                                                <div class="user-title"><?php echo htmlspecialchars($user['job_title']); ?></div>
-                                            <?php endif; ?>
+                                            <div class="user-name"><?php echo htmlspecialchars($user['name']); ?></div>
+
                                         </div>
                                     </div>
                                 </td>
-                                <td><?php echo htmlspecialchars($user['username']); ?></td>
+                                <td><?php echo htmlspecialchars($user['name']); ?></td>
                                 <td><?php echo htmlspecialchars($user['email']); ?></td>
-                                <td><?php echo htmlspecialchars($user['department_name'] ?? 'None'); ?></td>
+                                <td><?php echo htmlspecialchars($user['department'] ?? 'None'); ?></td>
                                 <td>
                                     <?php
                                     $roleClass = '';
@@ -254,28 +231,28 @@ include 'includes/header.php';
                                     ?>
                                     <span class="badge <?php echo $roleClass; ?>"><?php echo ucfirst($user['role']); ?></span>
                                 </td>
-                                <td>
-                                    <?php if ($user['is_active'] == 1): ?>
-                                        <span class="status status-active">Active</span>
-                                    <?php else: ?>
-                                        <span class="status status-inactive">Inactive</span>
-                                    <?php endif; ?>
-                                </td>
+
                                 <td>
                                     <div class="action-buttons">
+                                        <!-- View Button -->
                                         <a href="<?php echo BASE_URL; ?>/users/view?id=<?php echo $user['id']; ?>" class="btn btn-sm btn-outline" title="View">
                                             <i class="fas fa-eye"></i>
                                         </a>
+
+                                        <!-- Edit Button -->
                                         <a href="<?php echo BASE_URL; ?>/users/edit?id=<?php echo $user['id']; ?>" class="btn btn-sm btn-outline" title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
+
+                                        <!-- Delete Button (only visible if the user is not the current logged-in user) -->
                                         <?php if ($user['id'] != $_SESSION['user_id']): ?>
-                                            <button class="btn btn-sm btn-outline btn-delete" title="Delete" data-id="<?php echo $user['id']; ?>" data-name="<?php echo htmlspecialchars($user['full_name']); ?>">
+                                            <button class="btn btn-sm btn-outline btn-delete" title="Delete" data-id="<?php echo $user['id']; ?>" data-name="<?php echo htmlspecialchars($user['name']); ?>">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
                                         <?php endif; ?>
                                     </div>
                                 </td>
+
                             </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
@@ -311,52 +288,52 @@ include 'includes/header.php';
                 <i class="fas fa-angle-left"></i>
             </span>
         <?php endif; ?>
-        
+
         <?php
         // Calculate range of pages to display
         $startPage = max(1, $pagination['currentPage'] - 2);
         $endPage = min($pagination['totalPages'], $pagination['currentPage'] + 2);
-        
+
         // Always show first page
         if ($startPage > 1) {
-            echo '<a href="' . BASE_URL . '/users?page=1' . 
-                (!empty($filters['search']) ? '&q=' . urlencode($filters['search']) : '') . 
-                (!empty($filters['role']) ? '&role=' . $filters['role'] : '') . 
-                (!empty($filters['department_id']) ? '&department=' . $filters['department_id'] : '') . 
+            echo '<a href="' . BASE_URL . '/users?page=1' .
+                (!empty($filters['search']) ? '&q=' . urlencode($filters['search']) : '') .
+                (!empty($filters['role']) ? '&role=' . $filters['role'] : '') .
+                (!empty($filters['department_id']) ? '&department=' . $filters['department_id'] : '') .
                 '" class="page-btn">1</a>';
-            
+
             if ($startPage > 2) {
                 echo '<span class="page-btn disabled">...</span>';
             }
         }
-        
+
         // Show page numbers
         for ($i = $startPage; $i <= $endPage; $i++) {
             if ($i == $pagination['currentPage']) {
                 echo '<span class="page-btn active">' . $i . '</span>';
             } else {
-                echo '<a href="' . BASE_URL . '/users?page=' . $i . 
-                    (!empty($filters['search']) ? '&q=' . urlencode($filters['search']) : '') . 
-                    (!empty($filters['role']) ? '&role=' . $filters['role'] : '') . 
-                    (!empty($filters['department_id']) ? '&department=' . $filters['department_id'] : '') . 
+                echo '<a href="' . BASE_URL . '/users?page=' . $i .
+                    (!empty($filters['search']) ? '&q=' . urlencode($filters['search']) : '') .
+                    (!empty($filters['role']) ? '&role=' . $filters['role'] : '') .
+                    (!empty($filters['department_id']) ? '&department=' . $filters['department_id'] : '') .
                     '" class="page-btn">' . $i . '</a>';
             }
         }
-        
+
         // Always show last page
         if ($endPage < $pagination['totalPages']) {
             if ($endPage < $pagination['totalPages'] - 1) {
                 echo '<span class="page-btn disabled">...</span>';
             }
-            
-            echo '<a href="' . BASE_URL . '/users?page=' . $pagination['totalPages'] . 
-                (!empty($filters['search']) ? '&q=' . urlencode($filters['search']) : '') . 
-                (!empty($filters['role']) ? '&role=' . $filters['role'] : '') . 
-                (!empty($filters['department_id']) ? '&department=' . $filters['department_id'] : '') . 
+
+            echo '<a href="' . BASE_URL . '/users?page=' . $pagination['totalPages'] .
+                (!empty($filters['search']) ? '&q=' . urlencode($filters['search']) : '') .
+                (!empty($filters['role']) ? '&role=' . $filters['role'] : '') .
+                (!empty($filters['department_id']) ? '&department=' . $filters['department_id'] : '') .
                 '" class="page-btn">' . $pagination['totalPages'] . '</a>';
         }
         ?>
-        
+
         <?php if ($pagination['hasNextPage']): ?>
             <a href="<?php echo BASE_URL; ?>/users?page=<?php echo $pagination['currentPage'] + 1; ?><?php echo !empty($filters['search']) ? '&q=' . urlencode($filters['search']) : ''; ?><?php echo !empty($filters['role']) ? '&role=' . $filters['role'] : ''; ?><?php echo !empty($filters['department_id']) ? '&department=' . $filters['department_id'] : ''; ?>" class="page-btn">
                 <i class="fas fa-angle-right"></i>
@@ -398,91 +375,91 @@ include 'includes/header.php';
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Auto-submit form when filters change
-    const roleFilter = document.getElementById('role-filter');
-    const departmentFilter = document.getElementById('department-filter');
-    const statusFilter = document.getElementById('status-filter');
-    
-    roleFilter.addEventListener('change', function() {
-        document.getElementById('filter-form').submit();
-    });
-    
-    departmentFilter.addEventListener('change', function() {
-        document.getElementById('filter-form').submit();
-    });
-    
-    statusFilter.addEventListener('change', function() {
-        document.getElementById('filter-form').submit();
-    });
-    
-    // Delete confirmation modal
-    const deleteModal = document.getElementById('delete-modal');
-    const deleteUserName = document.getElementById('delete-user-name');
-    const confirmDeleteBtn = document.getElementById('confirm-delete');
-    const closeDeleteModalBtn = document.getElementById('close-delete-modal');
-    const cancelDeleteBtn = document.getElementById('cancel-delete');
-    const deleteButtons = document.querySelectorAll('.btn-delete');
-    
-    deleteButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const userId = this.getAttribute('data-id');
-            const userName = this.getAttribute('data-name');
-            
-            // Update modal
-            deleteUserName.textContent = userName;
-            confirmDeleteBtn.href = '<?php echo BASE_URL; ?>/users/delete?id=' + userId;
-            
-            // Show modal
-            deleteModal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-submit form when filters change
+        const roleFilter = document.getElementById('role-filter');
+        const departmentFilter = document.getElementById('department-filter');
+        const statusFilter = document.getElementById('status-filter');
+
+        roleFilter.addEventListener('change', function() {
+            document.getElementById('filter-form').submit();
         });
-    });
-    
-    // Close modal
-    closeDeleteModalBtn.addEventListener('click', function() {
-        deleteModal.style.display = 'none';
-        document.body.style.overflow = '';
-    });
-    
-    cancelDeleteBtn.addEventListener('click', function() {
-        deleteModal.style.display = 'none';
-        document.body.style.overflow = '';
-    });
-    
-    // Close modal when clicking outside
-    deleteModal.addEventListener('click', function(e) {
-        if (e.target === this) {
-            this.style.display = 'none';
+
+        departmentFilter.addEventListener('change', function() {
+            document.getElementById('filter-form').submit();
+        });
+
+        statusFilter.addEventListener('change', function() {
+            document.getElementById('filter-form').submit();
+        });
+
+        // Delete confirmation modal
+        const deleteModal = document.getElementById('delete-modal');
+        const deleteUserName = document.getElementById('delete-user-name');
+        const confirmDeleteBtn = document.getElementById('confirm-delete');
+        const closeDeleteModalBtn = document.getElementById('close-delete-modal');
+        const cancelDeleteBtn = document.getElementById('cancel-delete');
+        const deleteButtons = document.querySelectorAll('.btn-delete');
+
+        deleteButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const userId = this.getAttribute('data-id');
+                const userName = this.getAttribute('data-name');
+
+                // Update modal
+                deleteUserName.textContent = userName;
+                confirmDeleteBtn.href = '<?php echo BASE_URL; ?>/users/delete?id=' + userId;
+
+                // Show modal
+                deleteModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            });
+        });
+
+        // Close modal
+        closeDeleteModalBtn.addEventListener('click', function() {
+            deleteModal.style.display = 'none';
             document.body.style.overflow = '';
+        });
+
+        cancelDeleteBtn.addEventListener('click', function() {
+            deleteModal.style.display = 'none';
+            document.body.style.overflow = '';
+        });
+
+        // Close modal when clicking outside
+        deleteModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.style.display = 'none';
+                document.body.style.overflow = '';
+            }
+        });
+
+        // Initialize user avatar initials
+        document.querySelectorAll('.user-avatar[data-initials]').forEach(avatar => {
+            const initials = avatar.getAttribute('data-initials');
+            const randomColor = getRandomColor(initials);
+
+            avatar.style.backgroundColor = randomColor;
+            avatar.textContent = initials;
+        });
+
+        // Generate consistent random color based on initials
+        function getRandomColor(str) {
+            // Generate hash from string
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = str.charCodeAt(i) + ((hash << 5) - hash);
+            }
+
+            // Convert hash to RGB color
+            const h = Math.abs(hash % 360);
+            const s = 60 + Math.abs((hash / 360) % 20); // 60-80%
+            const l = 35 + Math.abs((hash / 360) % 15); // 35-50%
+
+            return `hsl(${h}, ${s}%, ${l}%)`;
         }
     });
-    
-    // Initialize user avatar initials
-    document.querySelectorAll('.user-avatar[data-initials]').forEach(avatar => {
-        const initials = avatar.getAttribute('data-initials');
-        const randomColor = getRandomColor(initials);
-        
-        avatar.style.backgroundColor = randomColor;
-        avatar.textContent = initials;
-    });
-    
-    // Generate consistent random color based on initials
-    function getRandomColor(str) {
-        // Generate hash from string
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-            hash = str.charCodeAt(i) + ((hash << 5) - hash);
-        }
-        
-        // Convert hash to RGB color
-        const h = Math.abs(hash % 360);
-        const s = 60 + Math.abs((hash / 360) % 20); // 60-80%
-        const l = 35 + Math.abs((hash / 360) % 15); // 35-50%
-        
-        return `hsl(${h}, ${s}%, ${l}%)`;
-    }
-});
 </script>
 
 <?php

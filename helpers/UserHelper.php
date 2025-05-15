@@ -21,74 +21,47 @@ class UserHelper {
     /**
      * Get all users with pagination
      */
-    public static function getAllUsers($page = 1, $limit = ITEMS_PER_PAGE, $filters = []) {
-        $conn = getDbConnection();
-        
-        // Build query
-        $sql = "SELECT u.*, d.name as department_name, l.name as location_name 
-                FROM users u 
-                LEFT JOIN departments d ON u.department_id = d.id 
-                LEFT JOIN locations l ON u.location_id = l.id";
-        
-        $where = [];
-        $params = [];
-        
-        // Apply filters
-        if (!empty($filters['search'])) {
-            $where[] = "(u.username LIKE ? OR u.full_name LIKE ? OR u.email LIKE ?)";
-            $searchParam = '%' . $filters['search'] . '%';
-            $params[] = $searchParam;
-            $params[] = $searchParam;
-            $params[] = $searchParam;
-        }
-        
-        if (!empty($filters['role'])) {
-            $where[] = "u.role = ?";
-            $params[] = $filters['role'];
-        }
-        
-        if (!empty($filters['department_id'])) {
-            $where[] = "u.department_id = ?";
-            $params[] = $filters['department_id'];
-        }
-        
-        if (!array_key_exists('is_active', $filters)) {
-            $where[] = "u.is_active = ?";
-            $params[] = 1; // Default to active users if not specified
-        } else if($filters['is_active'] !== '') {
-            $where[] = "u.is_active = ?";
-            $params[] = $filters['is_active'];
-        }
-        
-        // Combine WHERE clauses
-        if (!empty($where)) {
-            $sql .= " WHERE " . implode(" AND ", $where);
-        }
-        
-        // Count total records for pagination
-        $countSql = str_replace("u.*, d.name as department_name, l.name as location_name", "COUNT(*) as total", $sql);
-        $countStmt = $conn->prepare($countSql);
-        $countStmt->execute($params);
-        $totalItems = (int)$countStmt->fetchColumn();
-        
-        // Add order and limit
-        $sql .= " ORDER BY u.full_name ASC";
-        
-        // Calculate pagination
-        $pagination = UtilityHelper::paginate($totalItems, $page, $limit);
-        $sql .= " LIMIT " . $pagination['offset'] . ", " . $pagination['itemsPerPage'];
-        
-        // Execute query
-        $stmt = $conn->prepare($sql);
-        $stmt->execute($params);
-        $users = $stmt->fetchAll();
-        
-        return [
-            'users' => $users,
-            'pagination' => $pagination
-        ];
+   public static function getAllUsers($filters = []) {
+    $conn = getDbConnection();
+
+    // Build query
+    $sql = "SELECT *
+            FROM users u";
+
+    $where = [];
+    $params = [];
+
+    // Apply filters
+    if (!empty($filters['search'])) {
+        $where[] = "(u.name LIKE ? OR u.email LIKE ?)";
+        $searchParam = '%' . $filters['search'] . '%';
+        $params[] = $searchParam;
+        $params[] = $searchParam;
     }
-    
+
+    if (!empty($filters['role'])) {
+        $where[] = "u.role = ?";
+        $params[] = $filters['role'];
+    }
+
+    // Combine WHERE clauses
+    if (!empty($where)) {
+        $sql .= " WHERE " . implode(" AND ", $where);
+    }
+
+    // Add order
+    $sql .= " ORDER BY u.name ASC";
+
+    // Execute query to get users
+    $stmt = $conn->prepare($sql);
+    $stmt->execute($params);
+    $users = $stmt->fetchAll();
+
+    return [
+        'users' => $users
+    ];
+}
+
     /**
      * Create a new user
      */
@@ -121,16 +94,14 @@ class UserHelper {
         
         $stmt = $conn->prepare($sql);
         $result = $stmt->execute([
-            $userData['username'],
+            $userData['name'],
             $hashedPassword,
             $userData['email'],
-            $userData['full_name'],
+            $userData['name'],
             $userData['phone'] ?? null,
-            $userData['department_id'] ?? null,
-            $userData['job_title'] ?? null,
-            $userData['location_id'] ?? null,
+          
             $userData['role'] ?? 'user',
-            $userData['is_active'] ?? 1,
+            
             $_SESSION['user_id'] ?? null
         ]);
         
