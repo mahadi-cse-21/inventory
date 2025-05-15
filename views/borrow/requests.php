@@ -13,11 +13,15 @@ $conn = getDbConnection();
 $pageTitle = 'Manage Borrow Requests';
 
 // Check if user is logged in and has the right permissions
-if (!AuthHelper::isAuthenticated() || !hasRole(['admin'])) {
-  setFlashMessage('You do not have permission to access this page.', 'danger');
-  redirect(BASE_URL . '/dashboard');
-  exit;
+// Check if user is logged in
+if (!AuthHelper::isAuthenticated()) {
+    setFlashMessage('Please log in to continue.', 'danger');
+    redirect(BASE_URL . '/login');
+    exit;
 }
+
+
+
 
 // Get current user
 $currentUser = AuthHelper::getCurrentUser();

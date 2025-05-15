@@ -52,7 +52,7 @@ $routes = [
     'items/view' => 'views/items/view.php',
     'items/delete' => 'views/items/delete.php',
     'items/browse' => 'views/items/browse.php',
-    'items/browse' => 'views/items/browse.php',
+   
     'items/search' => 'views/items/search.php',
 
 
@@ -64,6 +64,7 @@ $routes = [
     'borrow/history' => 'views/borrow/history.php',
     'borrow/return' => 'views/borrow/return.php',
     'borrow/requests' => 'views/borrow/requests.php',
+    'borrow/requestto' =>'views/borrow/requestto.php',
     'borrow/cancel' => 'views/borrow/cancel.php',
     'borrow/approve' => 'helpers/approve.php',
     // 'borrow/view-request' => 'views/borrow/view_request.php',

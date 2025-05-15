@@ -18,14 +18,14 @@ if (!$currentUser) {
 }
 
 // Get department name
-$departmentName = 'Not Set';
-if (!empty($currentUser['department_id'])) {
-    $conn = getDbConnection();
-    $sql = "SELECT name FROM departments WHERE id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->execute([$currentUser['department_id']]);
-    $departmentName = $stmt->fetchColumn() ?: 'Not Set';
-}
+// $departmentName = 'Not Set';
+// if (!empty($currentUser['department_id'])) {
+//     $conn = getDbConnection();
+//     $sql = "SELECT name FROM departments WHERE id = ?";
+//     $stmt = $conn->prepare($sql);
+//     $stmt->execute([$currentUser['department_id']]);
+//     $departmentName = $stmt->fetchColumn() ?: 'Not Set';
+// }
 
 // Get location name
 $locationName = 'Not Set';
@@ -39,9 +39,9 @@ if (!empty($currentUser['location_id'])) {
 
 // Get borrowing statistics
 // Count currently borrowed items
-$borrowedSql = "SELECT COUNT(*) FROM borrowed_items bi 
-               JOIN borrow_requests br ON bi.borrow_request_id = br.id 
-               WHERE br.user_id = ? AND br.status = 'checked_out' AND bi.is_returned = 0";
+$borrowedSql = "SELECT COUNT(*) FROM borrowed_item bi 
+               JOIN requests br ON bi.request_id = br.id 
+               WHERE br.user_id = ? AND br.status = 'borrowed' AND bi.return_date is NULL";
 $borrowedStmt = $conn->prepare($borrowedSql);
 $borrowedStmt->execute([$currentUser['id']]);
 $borrowedCount = (int)$borrowedStmt->fetchColumn();
@@ -49,9 +49,9 @@ $borrowedCount = (int)$borrowedStmt->fetchColumn();
 // Calculate on-time return rate
 $returnRateSql = "SELECT 
                     COUNT(*) as total_returns,
-                    SUM(CASE WHEN br.status = 'returned' AND br.return_date >= br.actual_return_date THEN 1 ELSE 0 END) as on_time_returns
-                  FROM borrow_requests br
-                  WHERE br.user_id = ? AND br.status = 'returned'";
+                    SUM(CASE WHEN br.status = 'returned' AND br.due_date >= br.return_date THEN 1 ELSE 0 END) as on_time_returns
+                  FROM borrowed_item br join requests r
+                  WHERE r.user_id = ? AND br.status = 'returned'";
 $returnRateStmt = $conn->prepare($returnRateSql);
 $returnRateStmt->execute([$currentUser['id']]);
 $returnStats = $returnRateStmt->fetch();
@@ -62,22 +62,35 @@ if ($returnStats['total_returns'] > 0) {
 }
 
 // Get average borrow duration
-$durationSql = "SELECT AVG(DATEDIFF(COALESCE(br.actual_return_date, NOW()), br.borrow_date)) as avg_duration
-               FROM borrow_requests br
-               WHERE br.user_id = ? AND (br.status = 'returned' OR br.status = 'checked_out')";
+$durationSql = "SELECT AVG(DATEDIFF(COALESCE(bi.return_date, NOW()), bi.borrow_date)) as avg_duration
+               FROM requests br join borrowed_item bi
+               WHERE br.user_id = ? and bi.request_id = br.id AND (bi.status = 'returned' OR bi.status = 'borrowed')";
 $durationStmt = $conn->prepare($durationSql);
 $durationStmt->execute([$currentUser['id']]);
 $avgDuration = round((float)$durationStmt->fetchColumn(), 1);
 
 // Get frequently borrowed items
-$frequentItemsSql = "SELECT i.id, i.name, i.brand, i.model, i.asset_id, COUNT(*) as borrow_count, MAX(br.created_at) as last_borrowed
-                     FROM borrowed_items bi
-                     JOIN items i ON bi.item_id = i.id
-                     JOIN borrow_requests br ON bi.borrow_request_id = br.id
-                     WHERE br.user_id = ?
-                     GROUP BY i.id
-                     ORDER BY borrow_count DESC, last_borrowed DESC
-                     LIMIT 5";
+$frequentItemsSql = "
+    SELECT 
+        i.id, 
+        i.name, 
+        COUNT(*) AS borrow_count, 
+        MAX(br.request_date) AS last_borrowed
+    FROM 
+        borrowed_item bi
+    JOIN 
+        item i ON bi.item_id = i.id
+    JOIN 
+        requests br ON bi.request_id = br.id
+    WHERE 
+        br.user_id = ?
+    GROUP BY 
+        i.id, i.name
+    ORDER BY 
+        borrow_count DESC, last_borrowed DESC
+    LIMIT 5
+";
+
 $frequentItemsStmt = $conn->prepare($frequentItemsSql);
 $frequentItemsStmt->execute([$currentUser['id']]);
 $frequentItems = $frequentItemsStmt->fetchAll();
@@ -94,7 +107,7 @@ include 'includes/header.php';
         <div style="background-color: var(--primary-light); width: 200px; height: 200px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 4rem; font-weight: 500; margin-bottom: 1rem;">
             <?php
             $initials = '';
-            $nameParts = explode(' ', $currentUser['full_name']);
+            $nameParts = explode(' ', $currentUser['name']);
             foreach ($nameParts as $part) {
                 $initials .= strtoupper(substr($part, 0, 1));
             }
@@ -116,7 +129,7 @@ include 'includes/header.php';
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem;">
                 <div>
                     <div style="font-size: 0.8rem; color: var(--gray-500); margin-bottom: 0.25rem;">Full Name</div>
-                    <div style="font-weight: 500;"><?php echo htmlspecialchars($currentUser['full_name']); ?></div>
+                    <div style="font-weight: 500;"><?php echo htmlspecialchars($currentUser['name']); ?></div>
                 </div>
                 <div>
                     <div style="font-size: 0.8rem; color: var(--gray-500); margin-bottom: 0.25rem;">Email Address</div>
@@ -126,17 +139,11 @@ include 'includes/header.php';
                     <div style="font-size: 0.8rem; color: var(--gray-500); margin-bottom: 0.25rem;">Phone Number</div>
                     <div style="font-weight: 500;"><?php echo !empty($currentUser['phone']) ? htmlspecialchars($currentUser['phone']) : 'Not Set'; ?></div>
                 </div>
-                <div>
-                    <div style="font-size: 0.8rem; color: var(--gray-500); margin-bottom: 0.25rem;">Department</div>
-                    <div style="font-weight: 500;"><?php echo htmlspecialchars($departmentName); ?></div>
-                </div>
-                <div>
-                    <div style="font-size: 0.8rem; color: var(--gray-500); margin-bottom: 0.25rem;">Job Title</div>
-                    <div style="font-weight: 500;"><?php echo !empty($currentUser['job_title']) ? htmlspecialchars($currentUser['job_title']) : 'Not Set'; ?></div>
-                </div>
+                
+               
                 <div>
                     <div style="font-size: 0.8rem; color: var(--gray-500); margin-bottom: 0.25rem;">Location</div>
-                    <div style="font-weight: 500;"><?php echo htmlspecialchars($locationName); ?></div>
+                    <div style="font-weight: 500;"><?php echo htmlspecialchars($currentUser['name']); ?></div>
                 </div>
             </div>
         </div>
@@ -148,20 +155,13 @@ include 'includes/header.php';
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1.5rem;">
                 <div>
                     <div style="font-size: 0.8rem; color: var(--gray-500); margin-bottom: 0.25rem;">Username</div>
-                    <div style="font-weight: 500;"><?php echo htmlspecialchars($currentUser['username']); ?></div>
+                    <div style="font-weight: 500;"><?php echo htmlspecialchars($currentUser['name']); ?></div>
                 </div>
                 <div>
                     <div style="font-size: 0.8rem; color: var(--gray-500); margin-bottom: 0.25rem;">Role</div>
                     <div style="font-weight: 500;"><?php echo ucfirst(htmlspecialchars($currentUser['role'])); ?></div>
                 </div>
-                <div>
-                    <div style="font-size: 0.8rem; color: var(--gray-500); margin-bottom: 0.25rem;">Member Since</div>
-                    <div style="font-weight: 500;"><?php echo UtilityHelper::formatDateForDisplay($currentUser['created_at'], 'long'); ?></div>
-                </div>
-                <div>
-                    <div style="font-size: 0.8rem; color: var(--gray-500); margin-bottom: 0.25rem;">Last Login</div>
-                    <div style="font-weight: 500;"><?php echo $currentUser['last_login'] ? UtilityHelper::formatDateForDisplay($currentUser['last_login'], 'datetime') : 'Never'; ?></div>
-                </div>
+
             </div>
         </div>
     </div>

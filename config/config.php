@@ -29,10 +29,12 @@ date_default_timezone_set('America/New_York');
 // Security
 define('CSRF_TOKEN_NAME', 'csrf_token');
 
-// Initialize session
-session_name(SESSION_NAME);
-session_start();
-session_regenerate_id(true);
+// Initialize session only if not already active
+if (session_status() === PHP_SESSION_NONE) {
+    session_name(SESSION_NAME);
+    session_start();
+    session_regenerate_id(true);
+}
 
 // Set up CSRF token if not exists
 if (!isset($_SESSION[CSRF_TOKEN_NAME])) {

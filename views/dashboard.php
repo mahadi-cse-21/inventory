@@ -502,7 +502,7 @@ include 'includes/header.php';
                                 <td data-label="Status">
                                     <?php echo $borrow['status']; ?>
                                 </td>
-                                 
+
                                 <td data-label="Actions">
                                     <?php if ($borrow['status'] !== 'returned'): ?>
                                         <a href="<?php echo BASE_URL; ?>/borrow/return?id=<?php echo $borrow['id']; ?>" class="btn btn-sm btn-outline">Return</a>
@@ -549,25 +549,38 @@ include 'includes/header.php';
                                 </td>
                                 <td data-label="Items"><?php echo $request['quantity']; ?> item(s)</td>
                                 <td data-label="Requested On"><?php echo UtilityHelper::formatDateForDisplay($request['request_date'], 'short'); ?></td>
-
                                 <td data-label="Status">
                                     <span class="status status-pending"><?php echo $request['status'] ?></span>
                                 </td>
+
+                                <!-- Actions Column -->
                                 <td data-label="Actions">
-                                    <a href="<?php echo BASE_URL; ?>/helpers/approve.php?id=<?php echo $request['id']; ?>"
-                                        class="btn btn-sm btn-success"
-                                        onclick="return confirm('Are you sure you want to approve this request?');">
-                                        <i class="fas fa-check"></i> Approve
-                                    </a>
-
-                                    <a href="<?php echo BASE_URL; ?>/helpers/rejected.php?id=<?php echo $request['id']; ?>"
-                                        class="btn btn-sm btn-danger"
-                                        onclick="return confirm('Are you sure you want to reject this request?');">
-                                        <i class="fas fa-times"></i> Reject
-                                    </a>
+                                    <?php if ($request['status'] === 'pending'): ?>
+                                        <?php if ($currentUser['role']=='admin'): ?>
+                                            <!-- Active buttons for non-students -->
+                                            <a href="<?php echo BASE_URL; ?>/borrow/approve?id=<?php echo $request['id']; ?>"
+                                                class="btn btn-sm btn-success"
+                                                onclick="return confirm('Are you sure you want to approve this request?');">
+                                                <i class="fas fa-check"></i>
+                                            </a>
+                                            <a href="<?php echo BASE_URL; ?>/borrow/cancel?id=<?php echo $request['id']; ?>"
+                                                class="btn btn-sm btn-danger"
+                                                onclick="return confirm('Are you sure you want to cancel this request?');">
+                                                <i class="fas fa-times"></i>
+                                            </a>
+                                        <?php else: ?>
+                                            <!-- Disabled buttons for students -->
+                                            <button class="btn btn-sm btn-success" disabled>
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" disabled>
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
                                 </td>
-
                             </tr>
+
                         <?php endforeach; ?>
                     </tbody>
                 </table>
@@ -638,7 +651,16 @@ include 'includes/header.php';
                                 <span class="status-indicator status-available"></span>
                                 <span>Available</span>
                             </div>
-                            <a href="<?php echo BASE_URL; ?>/helpers/request.php?id=<?php echo $item['id']; ?>" class="btn btn-sm btn-primary">Request</a>
+
+
+                            <a href="<?php
+                                        if ($currentUser['role'] == 'student') {
+
+                                            echo BASE_URL . '/borrow/requestto?id=' . $item['id'];
+                                        } else {
+                                            echo BASE_URL . '/borrow/requests?id=' . $item['id'];
+                                        }
+                                        ?>" class="btn btn-sm btn-primary">Request</a>
                         </div>
                     </div>
                 </div>

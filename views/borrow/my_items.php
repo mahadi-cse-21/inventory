@@ -151,10 +151,21 @@ include 'includes/header.php';
                                 </td>
                                 <td>
                                     <?php if (strtolower(trim($item['status'])) !== 'returned'): ?>
-                                        <a href="<?php echo BASE_URL; ?>/borrow/return?id=<?php echo urlencode($item['id']); ?>"
-                                            style="margin-left: auto; padding: 6px 12px; font-size: 0.85rem; background-color: #007bff; color: white; border: none; border-radius: 4px; text-decoration: none;">
-                                            Return
-                                        </a>
+                                        <?php if ($currentUser['role'] !== 'student'): ?>
+                                            <!-- Active Return button for non-students -->
+                                            <a href="<?php echo BASE_URL; ?>/borrow/return?id=<?php echo urlencode($item['id']); ?>"
+                                                style="margin-left: auto; padding: 6px 12px; font-size: 0.85rem; background-color: #007bff; color: white; border: none; border-radius: 4px; text-decoration: none;">
+                                                Return
+                                            </a>
+                                        <?php else: ?>
+                                            <!-- Disabled Return button for students -->
+                                            <a href="javascript:void(0);"
+                                                style="margin-left: auto; padding: 6px 12px; font-size: 0.85rem; background-color: #aaa; color: white; border: none; border-radius: 4px; text-decoration: none; cursor: not-allowed;"
+                                                title="Students cannot return items directly">
+                                                Return
+                                            </a>
+                                        <?php endif; ?>
+
                                     <?php else: ?>
                                         <button class="btn btn-sm btn-outline" disabled>Returned</button>
                                     <?php endif; ?>

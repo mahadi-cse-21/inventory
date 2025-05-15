@@ -151,22 +151,38 @@ include 'includes/header.php';
                                     </span>
                                 </td>
                                 <td>
-                                    <?php if ($request['status'] === 'pending'): ?>
-                                        <!-- Approve button -->
-                                        <a href="<?php echo BASE_URL; ?>/borrow/approve?id=<?php echo $request['id']; ?>"
-                                            class="btn btn-sm btn-success"
-                                            onclick="return confirm('Are you sure you want to approve this request?');">
-                                            <i class="fas fa-check"></i>
-                                        </a>
+                                    <?php if ($request['status'] === 'pending' && $currentUser['role'] !== 'student'): ?>
+    <!-- Approve button -->
+    <a href="<?php echo BASE_URL; ?>/borrow/approve?id=<?php echo $request['id']; ?>"
+        class="btn btn-sm btn-success"
+        onclick="return confirm('Are you sure you want to approve this request?');">
+        <i class="fas fa-check"></i>
+    </a>
 
-                                        <!-- Cancel button -->
-                                        <a href="<?php echo BASE_URL; ?>/borrow/cancel?id=<?php echo $request['id']; ?>"
-                                            class="btn btn-sm btn-danger"
-                                            onclick="return confirm('Are you sure you want to cancel this request?');">
-                                            <i class="fas fa-times"></i>
-                                        </a>
+    <!-- Cancel button -->
+    <a href="<?php echo BASE_URL; ?>/borrow/cancel?id=<?php echo $request['id']; ?>"
+        class="btn btn-sm btn-danger"
+        onclick="return confirm('Are you sure you want to cancel this request?');">
+        <i class="fas fa-times"></i>
+    </a>
 
-                                    <?php endif; ?>
+<?php elseif ($request['status'] === 'approved'): ?>
+    <!-- Approved status icon or message -->
+    <button class="btn btn-sm btn-secondary" disabled>
+        <i class="fas fa-check-circle"></i> Approved
+    </button>
+
+<?php else: ?>
+    <!-- Disabled buttons for students or other statuses -->
+    <button class="btn btn-sm btn-success" disabled>
+        <i class="fas fa-check"></i>
+    </button>
+    <button class="btn btn-sm btn-danger" disabled>
+        <i class="fas fa-times"></i>
+    </button>
+<?php endif; ?>
+
+
                                 </td>
 
                             </tr>
